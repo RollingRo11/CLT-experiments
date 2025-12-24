@@ -89,7 +89,8 @@ def analyze_feature_activations(clt, model, tokenizer, features: list, prompts: 
 
             acts = clt.encode(sae_input)
             # Get activations for this specific feature at this layer
-            feature_acts = acts[0, :, layer, feature].float().cpu().numpy()  # [seq_len]
+            # acts shape: [seq, num_layers, d_sae]
+            feature_acts = acts[:, layer, feature].float().cpu().numpy()  # [seq_len]
 
             tokens = tokenizer.convert_ids_to_tokens(inputs[0].tolist())
 
