@@ -1,14 +1,27 @@
 Experiment 6: Residual Stream Alignment Results
-Global Average Sim: -0.0029
-Activations Analyzed: 374
+Global Average Sim: -0.0055
+Activations Analyzed: 1836
 
 Top Aligned Features:
-L3->L18 | Feat 443 | Sim: 0.042 | n=35
-L6->L17 | Feat 665 | Sim: 0.040 | n=17
-L4->L16 | Feat 231 | Sim: 0.035 | n=12
-L8->L16 | Feat 550 | Sim: 0.016 | n=14
-L8->L14 | Feat 327 | Sim: 0.007 | n=80
-L0->L14 | Feat 9863 | Sim: -0.010 | n=24
-L8->L13 | Feat 369 | Sim: -0.013 | n=83
-L8->L12 | Feat 352 | Sim: -0.029 | n=47
-L0->L2 | Feat 8644 | Sim: -0.099 | n=19
+L3->L18 | Feat 443 | Sim: 0.042 | n=69
+L6->L17 | Feat 665 | Sim: 0.036 | n=41
+L4->L16 | Feat 231 | Sim: 0.029 | n=17
+L8->L20 | Feat 8845 | Sim: 0.028 | n=13
+L8->L12 | Feat 1157 | Sim: 0.025 | n=96
+L8->L14 | Feat 2621 | Sim: 0.010 | n=308
+L8->L14 | Feat 327 | Sim: 0.008 | n=204
+L8->L16 | Feat 550 | Sim: 0.007 | n=25
+L8->L17 | Feat 153 | Sim: 0.005 | n=14
+L8->L20 | Feat 6587 | Sim: 0.001 | n=32
+L8->L13 | Feat 87 | Sim: -0.000 | n=27
+L4->L18 | Feat 4045 | Sim: -0.004 | n=11
+L4->L17 | Feat 483 | Sim: -0.005 | n=12
+L8->L12 | Feat 26 | Sim: -0.007 | n=318
+L8->L15 | Feat 1680 | Sim: -0.009 | n=17
+L0->L14 | Feat 9863 | Sim: -0.010 | n=39
+L4->L17 | Feat 120 | Sim: -0.010 | n=13
+L8->L13 | Feat 369 | Sim: -0.013 | n=147
+L8->L19 | Feat 4454 | Sim: -0.031 | n=17
+L8->L12 | Feat 352 | Sim: -0.032 | n=74
+L0->L1 | Feat 8358 | Sim: -0.049 | n=157
+L0->L2 | Feat 8644 | Sim: -0.113 | n=63

@@ -1,9 +1,16 @@
 Experiment 1: Cross-Layer Weight Analysis Results
-==================================================
+============================================================
 
-Same-layer weight norm: 9.8359
-Cross-layer weight norm: 40.7095
-Total weight norm: 50.5455
+[Connection Counts]
+  Same-layer connections: 26
+  Cross-layer connections: 325
 
-Same-layer ratio: 19.46%
-Cross-layer ratio: 80.54%
+[Raw Totals]
+  Total same-layer norm: 9.8330
+  Total cross-layer norm: 40.7070
+  Raw cross-layer ratio: 80.54%
+
+[Normalized (Per-Connection Average)]
+  Avg norm per same-layer connection: 0.3782
+  Avg norm per cross-layer connection: 0.1253
+  Normalized cross-layer ratio: 24.88%

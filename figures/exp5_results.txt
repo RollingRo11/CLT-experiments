@@ -1,6 +1,6 @@
 Experiment 5 Results
-Avg Logit Sim: -0.003
-Same Prediction: 0/100
+Avg Logit Sim: 0.009
+Same Prediction: 2/500
 
 Top 20 Features:
 L0->L14 | Sim: -0.091 | ''y'' vs ''<unused62>''

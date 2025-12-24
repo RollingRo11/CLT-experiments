@@ -1,0 +1,15 @@
+Experiment 9: CLT vs Per-Layer Transcoder Comparison
+============================================================
+
+[Reconstruction Quality (FVU)]
+Layer 7: CLT=9.03%, TC=3.71%
+Layer 13: CLT=21.59%, TC=15.57%
+Layer 17: CLT=30.62%, TC=15.68%
+Layer 22: CLT=27.53%, TC=19.73%
+
+Average: CLT=22.19%, TC=13.67%
+
+[Feature Reuse]
+Mean output layers per feature: 12.50
+Median output layers per feature: 12
+Mean write span: 11.93
