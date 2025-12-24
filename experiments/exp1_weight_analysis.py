@@ -59,22 +59,38 @@ def analyze_decoder_weights(clt) -> dict:
     causal_mask = np.triu(np.ones((num_layers, num_layers), dtype=bool))
     future_mask = causal_mask & cross_layer_mask  # cross-layer that are valid (l_out > l_in)
 
+    # Count connections
+    n_same_layer = same_layer_mask.sum()  # = num_layers
+    n_cross_layer = future_mask.sum()  # = num_layers * (num_layers - 1) / 2
+
     same_layer_total = norms[same_layer_mask].sum()
     cross_layer_total = norms[future_mask].sum()
     total_norm = same_layer_total + cross_layer_total
 
-    # Debug: print some sample norms
-    print(f"\nDiagonal (same-layer) norms sample: {norms.diagonal()[:5]}")
+    # NORMALIZED metrics (average per connection)
+    same_layer_avg = same_layer_total / n_same_layer
+    cross_layer_avg = cross_layer_total / n_cross_layer
+
+    # Debug info
+    print(f"\nConnection counts: same-layer={n_same_layer}, cross-layer={n_cross_layer}")
+    print(f"Diagonal (same-layer) norms sample: {norms.diagonal()[:5]}")
     print(f"Off-diagonal sample [0,1:5]: {norms[0, 1:5]}")
-    print(f"Off-diagonal sample [0,-5:]: {norms[0, -5:]}")
 
     results = {
         "norms_matrix": norms,
         "same_layer_total": same_layer_total,
         "cross_layer_total": cross_layer_total,
         "total_norm": total_norm,
-        "cross_layer_ratio": cross_layer_total / total_norm if total_norm > 0 else 0,
-        "same_layer_ratio": same_layer_total / total_norm if total_norm > 0 else 0,
+        # Raw ratios (biased by connection count)
+        "cross_layer_ratio_raw": cross_layer_total / total_norm if total_norm > 0 else 0,
+        "same_layer_ratio_raw": same_layer_total / total_norm if total_norm > 0 else 0,
+        # Normalized metrics (per-connection average)
+        "n_same_layer": n_same_layer,
+        "n_cross_layer": n_cross_layer,
+        "same_layer_avg": same_layer_avg,
+        "cross_layer_avg": cross_layer_avg,
+        # Normalized ratio: what fraction of per-connection weight is cross-layer?
+        "cross_layer_ratio_normalized": cross_layer_avg / (same_layer_avg + cross_layer_avg) if (same_layer_avg + cross_layer_avg) > 0 else 0,
     }
 
     return results
@@ -159,14 +175,21 @@ def main():
     results = analyze_decoder_weights(clt)
 
     # Print results
-    print("\n" + "=" * 40)
+    print("\n" + "=" * 50)
     print("RESULTS")
-    print("=" * 40)
-    print(f"Total weight norm (same-layer): {results['same_layer_total']:.4f}")
-    print(f"Total weight norm (cross-layer): {results['cross_layer_total']:.4f}")
-    print(f"Total weight norm: {results['total_norm']:.4f}")
-    print(f"\nSame-layer ratio: {results['same_layer_ratio']:.2%}")
-    print(f"Cross-layer ratio: {results['cross_layer_ratio']:.2%}")
+    print("=" * 50)
+
+    print("\n[Raw Totals]")
+    print(f"  Same-layer connections: {results['n_same_layer']}")
+    print(f"  Cross-layer connections: {results['n_cross_layer']}")
+    print(f"  Total same-layer norm: {results['same_layer_total']:.4f}")
+    print(f"  Total cross-layer norm: {results['cross_layer_total']:.4f}")
+    print(f"  Raw cross-layer ratio: {results['cross_layer_ratio_raw']:.2%}")
+
+    print("\n[Normalized (Per-Connection Average)]")
+    print(f"  Avg norm per same-layer connection: {results['same_layer_avg']:.4f}")
+    print(f"  Avg norm per cross-layer connection: {results['cross_layer_avg']:.4f}")
+    print(f"  Normalized cross-layer ratio: {results['cross_layer_ratio_normalized']:.2%}")
 
     # Create figures directory
     figures_dir = Path(__file__).parent.parent / "figures"
@@ -181,12 +204,21 @@ def main():
     results_path = figures_dir / "exp1_results.txt"
     with open(results_path, "w") as f:
         f.write("Experiment 1: Cross-Layer Weight Analysis Results\n")
-        f.write("=" * 50 + "\n\n")
-        f.write(f"Same-layer weight norm: {results['same_layer_total']:.4f}\n")
-        f.write(f"Cross-layer weight norm: {results['cross_layer_total']:.4f}\n")
-        f.write(f"Total weight norm: {results['total_norm']:.4f}\n\n")
-        f.write(f"Same-layer ratio: {results['same_layer_ratio']:.2%}\n")
-        f.write(f"Cross-layer ratio: {results['cross_layer_ratio']:.2%}\n")
+        f.write("=" * 60 + "\n\n")
+
+        f.write("[Connection Counts]\n")
+        f.write(f"  Same-layer connections: {results['n_same_layer']}\n")
+        f.write(f"  Cross-layer connections: {results['n_cross_layer']}\n\n")
+
+        f.write("[Raw Totals]\n")
+        f.write(f"  Total same-layer norm: {results['same_layer_total']:.4f}\n")
+        f.write(f"  Total cross-layer norm: {results['cross_layer_total']:.4f}\n")
+        f.write(f"  Raw cross-layer ratio: {results['cross_layer_ratio_raw']:.2%}\n\n")
+
+        f.write("[Normalized (Per-Connection Average)]\n")
+        f.write(f"  Avg norm per same-layer connection: {results['same_layer_avg']:.4f}\n")
+        f.write(f"  Avg norm per cross-layer connection: {results['cross_layer_avg']:.4f}\n")
+        f.write(f"  Normalized cross-layer ratio: {results['cross_layer_ratio_normalized']:.2%}\n")
 
     print(f"\nResults saved to {results_path}")
     print("\nExperiment 1 complete!")

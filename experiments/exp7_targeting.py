@@ -81,11 +81,65 @@ def get_layer_components(model, layer_idx):
     
     return components
 
+def compute_null_baseline(model, n_samples=1000):
+    """
+    Compute null distribution: cosine similarity between random d_model vectors
+    and MLP/Attention weights. This establishes what "chance" looks like.
+    """
+    print(f"Computing null baseline with {n_samples} random vectors...")
+
+    d_model = model.config.hidden_size
+
+    # Sample random unit vectors
+    random_vecs = torch.randn(n_samples, d_model, device=DEVICE, dtype=torch.float32)
+    random_vecs = F.normalize(random_vecs, dim=1)
+
+    null_mlp_scores = []
+    null_q_scores = []
+
+    # Sample from a few layers to get representative baseline
+    test_layers = [5, 10, 15, 20]
+
+    for layer_idx in test_layers:
+        comps = get_layer_components(model, layer_idx)
+        W_Q = comps['W_Q'].to(torch.float32)  # [heads, d_head, d_model]
+        W_gate = comps['W_gate'].to(torch.float32)  # [hidden, d_model]
+
+        w_gate_norms = W_gate.norm(dim=1)
+
+        for v in random_vecs:
+            # MLP targeting
+            gate_cosines = torch.matmul(W_gate, v) / (w_gate_norms + 1e-8)
+            null_mlp_scores.append(gate_cosines.max().item())
+
+            # Attention targeting
+            q_acts = torch.matmul(W_Q, v).norm(dim=1)
+            null_q_scores.append(q_acts.max().item())
+
+    null_stats = {
+        'mlp_mean': np.mean(null_mlp_scores),
+        'mlp_std': np.std(null_mlp_scores),
+        'mlp_p95': np.percentile(null_mlp_scores, 95),
+        'mlp_p99': np.percentile(null_mlp_scores, 99),
+        'q_mean': np.mean(null_q_scores),
+        'q_std': np.std(null_q_scores),
+        'q_p95': np.percentile(null_q_scores, 95),
+        'q_p99': np.percentile(null_q_scores, 99),
+        'mlp_scores': null_mlp_scores,
+        'q_scores': null_q_scores,
+    }
+
+    print(f"  Null MLP: mean={null_stats['mlp_mean']:.4f}, p95={null_stats['mlp_p95']:.4f}, p99={null_stats['mlp_p99']:.4f}")
+    print(f"  Null Q:   mean={null_stats['q_mean']:.4f}, p95={null_stats['q_p95']:.4f}, p99={null_stats['q_p99']:.4f}")
+
+    return null_stats
+
+
 def analyze_targeting(clt, model, features):
     print(f"Analyzing targeting for {len(features)} features...")
-    
+
     results = []
-    
+
     # Optimization: Group features by target layer to load weights once
     features_by_target = {}
     for f in features:
@@ -155,30 +209,45 @@ def analyze_targeting(clt, model, features):
             
     return results
 
-def plot_targeting_results(results, save_path: Path):
-    # Plot histogram of max MLP cosine similarities
+def plot_targeting_results(results, null_stats, save_path: Path):
+    """Plot targeting results with null baseline comparison."""
     mlp_scores = [r['max_mlp_score'] for r in results]
-    
-    plt.figure(figsize=(12, 5))
-    
-    plt.subplot(1, 2, 1)
-    plt.hist(mlp_scores, bins=30, color='orange', alpha=0.7, edgecolor='black')
-    plt.xlabel("Max Cosine Sim with MLP Neuron")
-    plt.ylabel("Count")
-    plt.title("MLP Targeting")
-    plt.grid(True, alpha=0.3)
-    
-    # Plot histogram of max Q-Head activation strengths (relative)
-    # Note: These aren't cosine sims, they are projected norms.
     q_scores = [r['max_q_score'] for r in results]
-    
-    plt.subplot(1, 2, 2)
-    plt.hist(q_scores, bins=30, color='purple', alpha=0.7, edgecolor='black')
-    plt.xlabel("Max Activation Strength on Q-Head")
-    plt.ylabel("Count")
-    plt.title("Attention Head (Query) Targeting")
-    plt.grid(True, alpha=0.3)
-    
+
+    fig, axes = plt.subplots(1, 2, figsize=(14, 5))
+
+    # MLP Targeting with null baseline
+    ax1 = axes[0]
+    ax1.hist(null_stats['mlp_scores'], bins=40, alpha=0.5, color='gray',
+             label=f'Null (random vectors)', density=True)
+    ax1.hist(mlp_scores, bins=40, alpha=0.7, color='orange',
+             label='Cross-layer vectors', density=True)
+    ax1.axvline(null_stats['mlp_p95'], color='red', linestyle='--',
+                label=f"Null 95th %ile: {null_stats['mlp_p95']:.3f}")
+    ax1.axvline(null_stats['mlp_p99'], color='darkred', linestyle=':',
+                label=f"Null 99th %ile: {null_stats['mlp_p99']:.3f}")
+    ax1.set_xlabel("Max Cosine Sim with MLP Neuron", fontsize=12)
+    ax1.set_ylabel("Density", fontsize=12)
+    ax1.set_title("MLP Targeting: Cross-Layer vs Random Baseline", fontsize=14)
+    ax1.legend(fontsize=9)
+    ax1.grid(True, alpha=0.3)
+
+    # Attention Targeting with null baseline
+    ax2 = axes[1]
+    ax2.hist(null_stats['q_scores'], bins=40, alpha=0.5, color='gray',
+             label='Null (random vectors)', density=True)
+    ax2.hist(q_scores, bins=40, alpha=0.7, color='purple',
+             label='Cross-layer vectors', density=True)
+    ax2.axvline(null_stats['q_p95'], color='red', linestyle='--',
+                label=f"Null 95th %ile: {null_stats['q_p95']:.3f}")
+    ax2.axvline(null_stats['q_p99'], color='darkred', linestyle=':',
+                label=f"Null 99th %ile: {null_stats['q_p99']:.3f}")
+    ax2.set_xlabel("Max Activation Strength on Q-Head", fontsize=12)
+    ax2.set_ylabel("Density", fontsize=12)
+    ax2.set_title("Attention (Query) Targeting: Cross-Layer vs Random Baseline", fontsize=14)
+    ax2.legend(fontsize=9)
+    ax2.grid(True, alpha=0.3)
+
     plt.tight_layout()
     plt.savefig(save_path, dpi=150)
     plt.close()
@@ -188,44 +257,102 @@ def main():
     print("=" * 60)
     print("EXPERIMENT 7: Downstream Component Targeting")
     print("=" * 60)
-    
+
     clt = load_clt()
     model, tokenizer = load_model_and_tokenizer()
-    
+
+    # Compute null baseline FIRST
+    null_stats = compute_null_baseline(model, n_samples=500)
+
     # Get top features
     scores = compute_feature_cross_layer_scores(clt)
     top_features = get_top_features_and_targets(clt, scores, top_k=1000)
-    
+
     # Analyze
     results = analyze_targeting(clt, model, top_features)
-    
+
     # Stats
-    avg_mlp = np.mean([r['max_mlp_score'] for r in results])
-    print("\n" + "="*40)
-    print("RESULTS")
-    print("="*40)
-    print(f"Average Max Cosine Sim with MLP Input: {avg_mlp:.4f}")
-    
+    mlp_scores = [r['max_mlp_score'] for r in results]
+    q_scores = [r['max_q_score'] for r in results]
+
+    avg_mlp = np.mean(mlp_scores)
+    avg_q = np.mean(q_scores)
+
+    # Count how many exceed null thresholds
+    mlp_above_p95 = sum(1 for s in mlp_scores if s > null_stats['mlp_p95'])
+    mlp_above_p99 = sum(1 for s in mlp_scores if s > null_stats['mlp_p99'])
+    q_above_p95 = sum(1 for s in q_scores if s > null_stats['q_p95'])
+    q_above_p99 = sum(1 for s in q_scores if s > null_stats['q_p99'])
+
+    print("\n" + "=" * 50)
+    print("RESULTS WITH NULL BASELINE COMPARISON")
+    print("=" * 50)
+
+    print("\n[MLP Targeting]")
+    print(f"  Cross-layer mean: {avg_mlp:.4f}")
+    print(f"  Null baseline mean: {null_stats['mlp_mean']:.4f}")
+    print(f"  Null 95th percentile: {null_stats['mlp_p95']:.4f}")
+    print(f"  Null 99th percentile: {null_stats['mlp_p99']:.4f}")
+    print(f"  Features above null 95th: {mlp_above_p95}/{len(results)} ({100*mlp_above_p95/len(results):.1f}%)")
+    print(f"  Features above null 99th: {mlp_above_p99}/{len(results)} ({100*mlp_above_p99/len(results):.1f}%)")
+
+    print("\n[Attention (Query) Targeting]")
+    print(f"  Cross-layer mean: {avg_q:.4f}")
+    print(f"  Null baseline mean: {null_stats['q_mean']:.4f}")
+    print(f"  Null 95th percentile: {null_stats['q_p95']:.4f}")
+    print(f"  Null 99th percentile: {null_stats['q_p99']:.4f}")
+    print(f"  Features above null 95th: {q_above_p95}/{len(results)} ({100*q_above_p95/len(results):.1f}%)")
+    print(f"  Features above null 99th: {q_above_p99}/{len(results)} ({100*q_above_p99/len(results):.1f}%)")
+
     # Identify super-targeters
-    print("\nTop Targeting Features (MLP):")
+    print("\n[Top MLP Targeting Features]")
     sorted_mlp = sorted(results, key=lambda x: x['max_mlp_score'], reverse=True)
     for r in sorted_mlp[:10]:
-        print(f"L{r['l_in']}->L{r['l_out']} (Feat {r['feature']}): MLP Sim={r['max_mlp_score']:.3f} (Neuron {r['max_mlp_neuron']})")
-        
+        print(f"  L{r['l_in']}->L{r['l_out']} (Feat {r['feature']}): Sim={r['max_mlp_score']:.3f} (Neuron {r['max_mlp_neuron']})")
+
+    print("\n[Top Attention Targeting Features]")
+    sorted_q = sorted(results, key=lambda x: x['max_q_score'], reverse=True)
+    for r in sorted_q[:10]:
+        print(f"  L{r['l_in']}->L{r['l_out']} (Feat {r['feature']}): Score={r['max_q_score']:.3f} (Head {r['max_q_head']})")
+
     # Save
     figures_dir = Path(__file__).parent.parent / "figures"
     figures_dir.mkdir(exist_ok=True)
-    
-    plot_targeting_results(results, figures_dir / "exp7_targeting.png")
-    
+
+    plot_targeting_results(results, null_stats, figures_dir / "exp7_targeting.png")
+
     with open(figures_dir / "exp7_results.txt", "w") as f:
         f.write("Experiment 7: Downstream Component Targeting Results\n")
-        f.write(f"Avg Max MLP Sim: {avg_mlp:.4f}\n\n")
-        f.write("Top MLP Targeters:\n")
+        f.write("=" * 60 + "\n\n")
+
+        f.write("[NULL BASELINE (Random Vectors)]\n")
+        f.write(f"  MLP: mean={null_stats['mlp_mean']:.4f}, p95={null_stats['mlp_p95']:.4f}, p99={null_stats['mlp_p99']:.4f}\n")
+        f.write(f"  Attn Q: mean={null_stats['q_mean']:.4f}, p95={null_stats['q_p95']:.4f}, p99={null_stats['q_p99']:.4f}\n\n")
+
+        f.write("[CROSS-LAYER VECTORS]\n")
+        f.write(f"  MLP mean: {avg_mlp:.4f}\n")
+        f.write(f"  MLP above null 95th: {mlp_above_p95}/{len(results)} ({100*mlp_above_p95/len(results):.1f}%)\n")
+        f.write(f"  MLP above null 99th: {mlp_above_p99}/{len(results)} ({100*mlp_above_p99/len(results):.1f}%)\n\n")
+        f.write(f"  Attn Q mean: {avg_q:.4f}\n")
+        f.write(f"  Attn Q above null 95th: {q_above_p95}/{len(results)} ({100*q_above_p95/len(results):.1f}%)\n")
+        f.write(f"  Attn Q above null 99th: {q_above_p99}/{len(results)} ({100*q_above_p99/len(results):.1f}%)\n\n")
+
+        f.write("[Top MLP Targeters]\n")
         for r in sorted_mlp[:50]:
-            f.write(f"L{r['l_in']}->L{r['l_out']} | Feat {r['feature']} | Sim: {r['max_mlp_score']:.3f} | Neuron {r['max_mlp_neuron']}\n")
+            f.write(f"  L{r['l_in']}->L{r['l_out']} | Feat {r['feature']} | Sim: {r['max_mlp_score']:.3f} | Neuron {r['max_mlp_neuron']}\n")
+
+        f.write("\n[Top Attention Targeters]\n")
+        for r in sorted_q[:50]:
+            f.write(f"  L{r['l_in']}->L{r['l_out']} | Feat {r['feature']} | Score: {r['max_q_score']:.3f} | Head {r['max_q_head']}\n")
 
     print(f"\nResults saved to {figures_dir / 'exp7_results.txt'}")
+
+    return {
+        'results': results,
+        'null_stats': null_stats,
+        'mlp_above_p95_pct': 100 * mlp_above_p95 / len(results),
+        'q_above_p95_pct': 100 * q_above_p95 / len(results),
+    }
 
 if __name__ == "__main__":
     torch.set_grad_enabled(False)
