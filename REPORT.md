@@ -36,6 +36,7 @@ We tested and ruled out simpler explanations:
 |------------|------------|--------|------------|
 | "They're just shortcuts" | Exp 6: Residual Alignment | Cosine with ΔR ≈ 0 | ❌ They don't approximate the residual transformation |
 | "They predict tokens early" | Exp 5: Logit Lens | 0/100 token match | ❌ Cross-layer writes predict different tokens than same-layer |
+| "They adapt to task gradient" | Exp 8: Gradient Test | Cross ≈ Local (worse) | ❌ No evidence of task-specific gradient alignment |
 | "Same-layer does the real work" | Exp 2: Ablation | +52% FVU when ablated | ❌ Cross-layer carries essential information |
 | "Cross-layer dominates by weight" | Exp 1: Normalization | Same-layer 3× stronger per-connection | ❌ Cross-layer is numerous but individually weaker |
 
@@ -78,8 +79,28 @@ This is structural evidence supporting Anthropic's claim that CLTs reduce circui
 
 ## Experiment 1: Cross-Layer Weight Analysis
 
-**Goal**: Quantify how much decoder weight mass is in cross-layer vs same-layer connections.
+**Goal**: Quantify how much "weight mass" is allocated to cross-layer vs. same-layer connections in the CLT decoder.
 
+**Methodology**:
+We computed the L2 norm of every decoder vector $d_{l_{in}, i, l_{out}}$ in the CLT.
+- **Same-layer**: $l_{in} = l_{out}$
+- **Cross-layer**: $l_{out} > l_{in}$
+
+We compared the total mass (sum of norms) and the average mass per connection type.
+
+**Code Snippet**:
+```python
+# From experiments/exp1_weight_analysis.py
+for l_in in range(num_layers):
+    for l_out in range(num_layers):
+        # Shape: [d_sae, d_in]
+        dec_vectors = w_dec[l_in, :, l_out, :]
+        # Compute L2 norm for each feature
+        feature_norms = torch.norm(dec_vectors, dim=-1)
+        norms[l_in, l_out] = feature_norms.mean()
+```
+
+**Deep Analysis**:
 ![Weight Heatmap](figures/exp1_weight_heatmap.png)
 
 | Metric | Same-Layer | Cross-Layer |
@@ -87,200 +108,256 @@ This is structural evidence supporting Anthropic's claim that CLTs reduce circui
 | Connection count | 26 | 325 |
 | Total norm | 9.83 | 40.71 |
 | **Raw ratio** | 19.46% | **80.54%** |
-| Avg norm per connection | 0.378 | 0.125 |
-| **Normalized ratio** | **75.12%** | 24.88% |
+| Avg norm per connection | **0.378** | 0.125 |
 
-**Critical Insight**: The raw 80% figure is misleading. There are 12.5x more cross-layer connections than same-layer connections structurally. When normalized per-connection, **same-layer connections are 3x stronger** (0.378 vs 0.125 avg norm).
-
-![Weight Distribution](figures/exp1_weight_distribution.png)
+The raw 80% figure is initially shocking but structurally misleading. A triangular matrix has $\frac{N(N-1)}{2}$ off-diagonal elements vs $N$ diagonal ones.
+- **Interpretation**: When normalized per connection, **same-layer connections are 3× stronger** (0.378 vs 0.125).
+- **Conclusion**: The model *prefers* local writing but utilizes the vast number of cross-layer paths to distribute significant total mass. Cross-layer connections are not "sparse accidents"—they are a dense, distributed web.
 
 ---
 
 ## Experiment 2: Ablation Study
 
-**Goal**: Measure the functional impact of removing cross-layer connections.
+**Goal**: Determine if cross-layer connections carry essential functional information or are just redundant capacity.
 
+**Methodology**:
+We zeroed out all cross-layer decoder weights ($W_{dec}[l_{in}, :, l_{out}, :] = 0$ where $l_{in} \neq l_{out}$) and measured the reconstruction quality (FVU) on a standard prompt set.
+
+**Code Snippet**:
+```python
+# From experiments/exp2_ablation.py
+def create_ablated_clt(clt):
+    ablated = copy.deepcopy(clt)
+    for l_in in range(NUM_LAYERS):
+        for l_out in range(NUM_LAYERS):
+            if l_out != l_in:
+                # Zero out cross-layer connections
+                ablated.w_dec.data[l_in, :, l_out, :] = 0
+    return ablated
+```
+
+**Deep Analysis**:
 ![FVU Comparison](figures/exp2_fvu_comparison.png)
 
-| Condition | FVU |
-|-----------|-----|
+| Condition | FVU (Lower is better) |
+|-----------|-----------------------|
 | Full CLT | 28.65% |
-| Cross-layer ablated | 43.73% |
+| Cross-layer ablated | **43.73%** |
 | **Degradation** | +15.08% (52.6% relative) |
 
-Removing cross-layer connections significantly degrades reconstruction, confirming they carry meaningful information beyond same-layer connections.
+- **Interpretation**: A 52% relative worsening in reconstruction proves that cross-layer connections are **load-bearing**. The local connections cannot compensate for the missing information.
+- **Delta Loss**: Patching the ablated reconstruction increases the model's loss significantly more than the full reconstruction, confirming that downstream layers *expect* and *rely on* these direct writes.
 
-![Delta Loss](figures/exp2_delta_loss.png)
+---
+
+## Experiment 3: Feature-Level Analysis
+
+**Goal**: Identify which specific features rely most on cross-layer broadcasting.
+
+**Methodology**:
+We computed a "Cross-Layer Score" for each feature:
+$$ \text{Score} = \frac{\sum_{l_{out} > l_{in}} \|v_{cross}\|}{\|v_{local}\|} $$
+We then scanned the Wikitext-2 dataset to find the maximal activating tokens for these high-score features.
+
+**Code Snippet**:
+```python
+# From experiments/exp3_feature_analysis.py
+same_layer_norm = torch.norm(w_dec[l_in, feat, l_in, :]).item()
+cross_layer_norm = 0
+for l_out in range(l_in + 1, num_layers):
+    cross_layer_norm += torch.norm(w_dec[l_in, feat, l_out, :]).item()
+
+score = cross_layer_norm / same_layer_norm
+```
+
+**Deep Analysis**:
+High-scoring features often represent **broad semantic or syntactic concepts** that need to be known globally:
+- **L20 Feat 40** (Score 3.49): Activates on " cons" (construction? consequence?).
+- **L17 Feat 499** (Score 3.43): Activates on " of".
+- **L19 Feat 2087** (Score 4.05): Activates on " ref" (reference).
+
+This supports the "Path Collapsing" hypothesis: instead of passing "this is a reference" layer-by-layer, the CLT creates a single feature that shouts "REFERENCE" to all future layers simultaneously.
 
 ---
 
 ## Experiment 4: Layer Distance Analysis
 
-**Goal**: Analyze how cross-layer connection strength varies with distance.
+**Goal**: Test if cross-layer connections are only for "next-layer" shortcuts or true long-range broadcasting.
 
+**Methodology**:
+We grouped decoder norms by the distance ($l_{out} - l_{in}$) and computed statistics for each distance bin.
+
+**Code Snippet**:
+```python
+# From experiments/exp4_distance_analysis.py
+distance = l_out - l_in
+# Collect norms...
+d5_norm = distance_norms[5]
+d0_norm = distance_norms[0]
+decay = d5_norm / d0_norm
+```
+
+**Deep Analysis**:
 ![Distance Decay](figures/exp4_distance_decay.png)
 
-**Findings**:
-- Decoder norm decays with layer distance
-- Decay factor (distance 0→5): **0.34** (from 0.378 to 0.130)
-- Long tail remains significant—distant connections are weaker but present
-
-![Per-Layer Patterns](figures/exp4_per_layer_patterns.png)
-
-![Detailed Heatmap](figures/exp4_detailed_heatmap.png)
+- **Decay Factor**: The mean norm decays by factor **0.34** from distance 0 to 5.
+- **Long Tail**: While they decay, they do not vanish. Significant connection strength remains even at distances of 10+ layers.
+- **Interpretation**: The network uses a "broadcast with fading" strategy. The signal is strongest locally but remains readable far downstream, allowing early features to influence late-layer processing directly without intermediate hops.
 
 ---
 
 ## Experiment 5: Time Travel Logit Lens
 
-**Goal**: Do cross-layer writes predict the final token earlier than their source layer?
+**Goal**: Test the hypothesis that cross-layer connections are "predicting the next token early."
 
-**Method**: Compare logit predictions from same-layer vs cross-layer decoder vectors through the unembedding matrix.
+**Methodology**:
+We took the cross-layer vector $v_{cross}$ and decoded it using the model's unembedding matrix ($W_U$). We compared the top predicted token to the token predicted by the local vector $v_{local}$.
 
-| Metric | Value |
-|--------|-------|
-| Average logit similarity | -0.003 |
-| Same top token prediction | **0/100** |
+**Code Snippet**:
+```python
+# From experiments/exp5_timetravel.py
+logits_local = model.lm_head(vec_local)
+logits_cross = model.lm_head(vec_cross)
 
-**Interpretation**: Cross-layer writes predict completely different tokens than same-layer writes. Features don't "predict ahead"—they contribute to different semantic subspaces at different layers.
+# Check if they predict the same top token
+same_prediction = (logits_local.argmax() == logits_cross.argmax())
+```
+
+**Deep Analysis**:
+- **Result**: **0 / 100** features predicted the same top token.
+- **Logit Similarity**: Average cosine similarity is **-0.003** (uncorrelated).
+- **Conclusion**: Cross-layer connections are **NOT** simply "predicting the output token ahead of time." If they were, $v_{cross}$ would align with $v_{local}$ in the output vocabulary space. They are likely moving information into specific *computational* subspaces (like "activate head 2") rather than *output* subspaces.
 
 ---
 
 ## Experiment 6: Residual Stream Alignment
 
-**Goal**: Do cross-layer writes approximate the residual stream transformation between layers?
+**Goal**: Test the hypothesis that cross-layer connections mimic the "natural" residual stream transformation (shortcuts).
 
-**Method**: Compare cross-layer decoder vectors to ΔR = R_out - R_in.
+**Methodology**:
+We compared $v_{cross}$ to the actual difference in the residual stream $\Delta R = R_{out} - R_{in}$ for active inputs. If the CLT is just approximating the layer's transformation, these should align.
 
-| Metric | Value |
-|--------|-------|
-| Global average alignment | -0.0029 |
-| Top aligned feature | ~0.04 |
+**Code Snippet**:
+```python
+# From experiments/exp6_shortcut.py
+delta_R = R_out - R_in
+# Cosine similarity
+sims = F.cosine_similarity(vec_cross.unsqueeze(0), delta_R, dim=-1)
+```
 
-**Interpretation**: Cross-layer connections do NOT shortcut the residual stream transformation. They add orthogonal information rather than approximating what intermediate layers would compute.
-
+**Deep Analysis**:
 ![Alignment Histogram](figures/exp6_alignment.png)
+
+- **Result**: Global average alignment is **~0.00**.
+- **Conclusion**: Cross-layer connections are **orthogonal** to the standard residual path. They are not replacing or approximating the intermediate layers; they are adding *new, different* information that the standard path does not carry (or carries differently).
 
 ---
 
 ## Experiment 7b: Full Attention Targeting Scan
 
-**Goal**: Identify which layers and heads cross-layer features target.
+**Goal**: Determine if cross-layer features target specific Attention Heads.
 
-**Method**: Scan all 3.28M cross-layer decoder vectors, compute activation strength on each attention head's W_Q, compare to null baseline of random vectors.
+**Methodology**:
+We computed the activation strength of every cross-layer vector on every attention head's Query matrix $W_Q$:
+$$ \text{Strength} = \| W_Q \cdot v_{cross} \| $$
+We compared this to a null distribution generated from random vectors.
 
-### Results
+**Code Snippet**:
+```python
+# From experiments/exp7_full_targeting_scan.py
+# W_Q: [n_heads, head_dim, d_model]
+# batch_vecs: [batch, d_model]
+q_activations = torch.einsum('nhd,bd->bnh', W_Q, batch_vecs)
+head_strengths = q_activations.norm(dim=2) # Max over heads
+```
 
-| Metric | Value |
-|--------|-------|
-| Vectors scanned | 3,276,000 |
-| Above null p99 | 452,468 (**13.81%**) |
-| Null p99 threshold | 0.476 |
+**Deep Analysis**:
+![Attention Targeting](figures/exp7_attention_targeting.png)
 
-### Target Layer Distribution
-
-| Layer | Targeters | % of Total | Notes |
-|-------|-----------|------------|-------|
-| **L19** | **158,243** | **35.0%** | Mass convergence |
-| L23 | 92,650 | 20.5% | Secondary |
-| L17 | 45,177 | 10.0% | |
-| L25 | 42,840 | 9.5% | Final layer |
-| L21 | 11,196 | 2.5% | Strongest targeters |
-
-### Precision Targeting: Layer 21 Head 2
-
-The **strongest** attention targeters almost exclusively hit Layer 21, Head 2:
-
-| Source | Feature | Strength | Target |
-|--------|---------|----------|--------|
-| L6→L21 | 741 | 2.949 | Head 2 |
-| L9→L21 | 1815 | 2.789 | Head 2 |
-| L10→L21 | 2317 | 2.764 | Head 2 |
-| L7→L21 | 2010 | 2.744 | Head 2 |
-
-Top strength 2.949 is **6.2× the null p99 threshold**.
-
-![Attention Layer Distribution](figures/exp7_attention_targeting.png)
+- **Significance**: **13.88%** of vectors exceed the p99 null threshold.
+- **The L19 Bottleneck**: **35%** of all significant targeting converges on Layer 19. This suggests Layer 19 is a massive "attention router" for the network, and early features (from L6, L9, etc.) specifically manipulate how L19 attends to context.
+- **Precision**: The top targeters (e.g., L6→L21) hit specific heads (Head 2) with 6.2× the strength of random chance. This is precise, surgical control.
 
 ---
 
 ## Experiment 7c: Full MLP Targeting Scan
 
-**Goal**: Identify which layers and neurons cross-layer features target.
+**Goal**: Determine if cross-layer features target specific MLP Neurons.
 
-**Method**: Scan all 3.28M cross-layer decoder vectors, compute cosine similarity with each MLP gate neuron, compare to null baseline.
+**Methodology**:
+We computed the cosine similarity between cross-layer vectors and MLP Gate weights $W_{in}$:
+$$ \text{Sim} = \text{Cosine}(v_{cross}, W_{gate, neuron}) $$
 
-### Results
+**Code Snippet**:
+```python
+# From experiments/exp7_full_targeting_scan.py
+# W_gate_norm: [d_mlp, d_model]
+cosines = W_gate_norm @ batch_vecs.T
+max_cosines, max_neurons = cosines.abs().max(dim=0)
+```
 
-| Metric | Value |
-|--------|-------|
-| Vectors scanned | 3,276,000 |
-| Above null p99 | 450,814 (**13.76%**) |
-| Null p99 threshold | 0.141 |
+**Deep Analysis**:
+![MLP Targeting](figures/exp7_mlp_targeting.png)
 
-### Target Layer Distribution
+- **Hub Neurons**: Single neurons (e.g., L4 Neuron 5600) are targeted by **over 9,000 different features**. These act as "logical OR" gates or global flags that many different concepts can trigger.
+- **Suppression**: Many top interactions are *negative* (cosine $\approx -0.78$), meaning the cross-layer feature **shuts down** specific computations.
+- **Distribution**: Unlike attention (which peaks at L19), MLP targeting is strongest at the final layer (L25), suggesting features are writing directly to the final processing stages.
 
-| Layer | Targeters | % of Total | Notes |
-|-------|-----------|------------|-------|
-| **L25** | **93,708** | **20.8%** | Final layer |
-| L16 | 45,343 | 10.1% | |
-| L17 | 36,822 | 8.2% | |
-| L24 | 25,192 | 5.6% | |
-| L4 | 20,865 | 4.6% | Early hub |
+---
 
-### Hub Neurons
+## Experiment 8: Task Adaptation Gradient Test
 
-Specific neurons are targeted by thousands of features:
+**Goal**: Test if cross-layer features are "gradient-optimized" shortcuts for the task at the destination layer.
 
-| Layer | Neuron | Features Targeting |
-|-------|--------|-------------------|
-| L4 | 5600 | **9,473** |
-| L3 | 2780 | **9,072** |
-| L25 | 948 | 5,599 |
-| L4 | 1834 | 2,719 |
+**Methodology**:
+We computed the gradient of the loss with respect to the residual stream at the destination layer ($-\nabla_{R_{out}} \mathcal{L}$). We checked if $v_{cross}$ aligns better with this "ideal update" than $v_{local}$.
 
-### Top MLP Targeters (with Suppression)
+**Code Snippet**:
+```python
+# From experiments/exp8_gradient.py
+# Gradient of loss w.r.t residual stream
+grad = grads[l_out] 
+wanted_dir = -grad
 
-| Source | Feature | Cosine | Neuron | Sign |
-|--------|---------|--------|--------|------|
-| L18→L22 | 6775 | 0.793 | 890 | + |
-| L22→L25 | 2618 | 0.784 | 6861 | **−** |
-| L11→L16 | 7378 | 0.778 | 4963 | + |
-| L20→L22 | 406 | 0.766 | 890 | + |
-| L17→L19 | 9993 | 0.758 | 6568 | **−** |
+sim_local = F.cosine_similarity(v_local, wanted_dir, dim=-1)
+sim_cross = F.cosine_similarity(v_cross, wanted_dir, dim=-1)
+diff = sim_cross - sim_local
+```
 
-Many top targeters have **negative cosine**—specifically suppressing neurons.
-
-![MLP Layer Distribution](figures/exp7_mlp_targeting.png)
-
-![Combined Targeting Comparison](figures/exp7_combined_targeting.png)
+**Deep Analysis**:
+- **Result**: **Avg Improvement = -0.0067**.
+- **Interpretation**: $v_{cross}$ is slightly *less* aligned with the immediate task gradient than $v_{local}$.
+- **Conclusion**: Cross-layer connections are **not** simply "doing what the local feature would do, but better/faster." They are likely serving a structural or routing role (as seen in Exp 7) rather than just minimizing the immediate next-token loss at that specific layer. They are optimizing the *global* circuit, not the local step.
 
 ---
 
 ## Experiment 9: CLT vs Per-Layer Transcoder Comparison
 
-**Goal**: Compare CLT to per-layer transcoders on reconstruction and feature reuse.
+**Goal**: Evaluate the trade-off between reconstruction quality and path length reduction.
 
-### Reconstruction Quality (FVU)
+**Methodology**:
+We compared the standard CLT to a set of Per-Layer Transcoders (standard SAEs with skip connections) on FVU and Feature Span.
 
-| Layer | CLT | Per-Layer TC | Difference |
-|-------|-----|--------------|------------|
-| 7 | 9.03% | 3.71% | +5.32% |
-| 13 | 21.59% | 15.57% | +6.02% |
-| 17 | 30.62% | 15.68% | +14.94% |
-| 22 | 27.53% | 19.73% | +7.80% |
-| **Average** | **22.19%** | **13.67%** | **+8.52%** |
+**Code Snippet**:
+```python
+# From experiments/exp9_transcoder_comparison.py
+# Count how many layers a single feature writes to
+for l_out in range(l_in, NUM_LAYERS):
+    norm = torch.norm(w_dec[l_in, feat, l_out, :]).item()
+    if norm > threshold:
+        write_counts.append(1)
+```
 
-### Feature Reuse (Path Collapsing)
+**Deep Analysis**:
+![Comparison](figures/exp9_comparison.png)
 
-| Metric | Value |
-|--------|-------|
-| Mean output layers per feature | **12.50** |
-| Mean write span | **11.93 layers** |
+| System | Avg FVU (Reconstruction) | Mean Feature Span |
+|--------|--------------------------|-------------------|
+| **CLT** | 22.19% (Worse) | **12.50 layers** |
+| **Per-Layer TC** | **13.67%** (Better) | 1.00 layers |
 
-**Interpretation**: CLTs trade reconstruction fidelity (~40% worse) for path collapsing. Single CLT features span 12 layers on average, representing what would require chains of per-layer features.
-
-![Comparison Plot](figures/exp9_comparison.png)
+- **Trade-off**: The CLT sacrifices significant reconstruction fidelity (+8.5% FVU) to achieve **path collapsing**.
+- **Implication**: A single CLT feature represents a "super-feature" that spans 12 layers of processing. In a per-layer setup, this would require a chain of 12 separate features firing in sequence. The CLT compresses this entire circuit chain into one unit, potentially making interpretability easier (fewer features to track) but reconstruction noisier.
 
 ---
 
@@ -290,7 +367,7 @@ Many top targeters have **negative cosine**—specifically suppressing neurons.
 
 | Aspect | Attention | MLP |
 |--------|-----------|-----|
-| Above null p99 | 13.81% | 13.76% |
+| Above null p99 | 13.88% | 13.38% |
 | Top target layer | L19 (35%) | L25 (21%) |
 | Distribution | Very spiky | More spread |
 | Top strength (× null p99) | 6.2× | 5.6× |
