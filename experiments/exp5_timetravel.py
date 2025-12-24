@@ -109,6 +109,10 @@ def analyze_logit_diffs(clt, model, tokenizer, features):
         token_local = tokenizer.decode([top_local_id])
         token_cross = tokenizer.decode([top_cross_id])
         
+        # Use repr to handle newlines/special chars safely for logging
+        token_local_repr = repr(token_local)
+        token_cross_repr = repr(token_cross)
+        
         # Cosine similarity of logits (semantics)
         sim = F.cosine_similarity(logits_local.float(), logits_cross.float(), dim=0).item()
         
@@ -119,16 +123,16 @@ def analyze_logit_diffs(clt, model, tokenizer, features):
             "l_in": l_in,
             "feature": feat_idx,
             "l_out": l_out,
-            "token_local": token_local,
-            "token_cross": token_cross,
+            "token_local": token_local_repr, # Use repr version
+            "token_cross": token_cross_repr, # Use repr version
             "logit_sim": sim,
             "same_pred": same_prediction
         })
         
         if i < 10: # Print first few
             print(f"Feature {l_in}->{l_out} (Score {f['score']:.1f})")
-            print(f"  Local: '{token_local}'")
-            print(f"  Cross: '{token_cross}'")
+            print(f"  Local: {token_local_repr}")
+            print(f"  Cross: {token_cross_repr}")
             print(f"  Logit Sim: {sim:.3f}")
             print("-" * 20)
             
