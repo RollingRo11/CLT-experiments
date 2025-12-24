@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 from pathlib import Path
 
 from utils import (
-    load_clt, load_model_and_tokenizer, gather_clt_activations,
+    load_clt, load_model_and_tokenizer, gather_clt_activations, get_token_batch_iterator,
     NUM_LAYERS, DEVICE, TEST_PROMPTS
 )
 
@@ -107,42 +107,70 @@ def analyze_feature_activations(clt, model, tokenizer, features: list, prompts: 
     return results
 
 
-def find_active_features(clt, model, tokenizer, prompts, scores, top_k=20):
-    """Find features that activate the most on the given prompts."""
-    # Accumulate max activation per feature across all prompts
+def find_active_features(clt, model, tokenizer, batch_iterator, scores, top_k=50):
+    """Find features that activate the most on the given dataset batches."""
+    print("Scanning dataset for active features...")
+    
+    # Accumulate max activation per feature across all batches
     max_acts = torch.zeros(NUM_LAYERS, clt.w_enc.shape[2], device=DEVICE, dtype=clt.w_enc.dtype)
     
     # Store token info for the max activation
     max_tokens = [[None for _ in range(clt.w_enc.shape[2])] for _ in range(NUM_LAYERS)]
 
-    for prompt in prompts:
-        inputs = tokenizer.encode(prompt, return_tensors="pt", add_special_tokens=True).to(DEVICE)
-        tokens = tokenizer.convert_ids_to_tokens(inputs[0].tolist())
+    total_l0 = 0
+    num_batches = 0
+
+    for i, inputs in enumerate(batch_iterator):
+        # inputs: [batch, seq_len]
         
         sae_input, _ = gather_clt_activations(model, NUM_LAYERS, inputs)
         sae_input = sae_input.to(clt.w_enc.dtype)
 
-        # encode returns [seq, layers, d_sae]
+        # encode returns [batch, seq, layers, d_sae]
         acts = clt.encode(sae_input)  
         
         # Check overall sparsity
         l0 = (acts > 0).float().sum(dim=-1).mean().item()
-        print(f"  Prompt L0: {l0:.1f}")
+        total_l0 += l0
+        num_batches += 1
+        
+        if i % 5 == 0:
+            print(f"  Batch {i}: L0 = {l0:.1f}")
 
         # Update max acts
-        # acts: [seq, layers, d_sae] -> max over seq -> [layers, d_sae]
-        seq_max, seq_indices = acts.max(dim=0)
+        # acts: [batch, seq, layers, d_sae] -> max over batch, seq -> [layers, d_sae]
+        batch_max, batch_indices = acts.view(-1, NUM_LAYERS, clt.w_enc.shape[2]).max(dim=0)
         
-        update_mask = seq_max > max_acts
-        max_acts[update_mask] = seq_max[update_mask]
+        update_mask = batch_max > max_acts
+        max_acts[update_mask] = batch_max[update_mask]
         
         # Store tokens for new maxes
+        # We need to map flattened batch_indices back to [batch, seq] to get the token
+        # This is expensive to do for EVERY update if we did it naively, 
+        # but let's just do it for the ones that updated.
+        
+        # Actually, for simplicity/speed in this script, let's just store the max value 
+        # and maybe the token ID if we can easily get it.
+        # Since we flattened [batch, seq], index mapping is:
+        # idx = batch_idx * seq_len + seq_idx
+        # batch_idx = idx // seq_len
+        # seq_idx = idx % seq_len
+        
+        seq_len = inputs.shape[1]
+        
         update_indices = update_mask.nonzero()
         for idx in update_indices:
             l, f = idx[0].item(), idx[1].item()
-            token_idx = seq_indices[l, f].item()
-            if token_idx < len(tokens):
-                max_tokens[l][f] = tokens[token_idx]
+            flat_idx = batch_indices[l, f].item()
+            
+            b_idx = flat_idx // seq_len
+            s_idx = flat_idx % seq_len
+            
+            token_id = inputs[b_idx, s_idx].item()
+            token = tokenizer.decode([token_id])
+            max_tokens[l][f] = token
+
+    print(f"Average L0 across dataset: {total_l0 / num_batches:.1f}")
 
     # Find top k active features globally
     flat_acts = max_acts.flatten()
@@ -221,90 +249,232 @@ def plot_top_features_heatmap(top_features: list, save_path: Path):
     print(f"Saved top features heatmap to {save_path}")
 
 
+def plot_activation_vs_score(active_features_info, save_path: Path):
+
+
+    """Plot max activation vs cross-layer score."""
+
+
+    max_acts = [r['max_act'] for r in active_features_info]
+
+
+    scores = [r['cross_layer_score'] for r in active_features_info]
+
+
+    layers = [r['layer'] for r in active_features_info]
+
+
+    
+
+
+    plt.figure(figsize=(10, 6))
+
+
+    sc = plt.scatter(max_acts, scores, c=layers, cmap='viridis', alpha=0.7)
+
+
+    plt.colorbar(sc, label='Layer')
+
+
+    plt.xlabel("Max Activation (on wikitext-2)", fontsize=12)
+
+
+    plt.ylabel("Cross-Layer Score", fontsize=12)
+
+
+    plt.title("Feature Activation vs. Cross-Layer Reliance", fontsize=14)
+
+
+    plt.grid(True, alpha=0.3)
+
+
+    
+
+
+    plt.tight_layout()
+
+
+    plt.savefig(save_path, dpi=150, bbox_inches='tight')
+
+
+    plt.close()
+
+
+    print(f"Saved activation vs score plot to {save_path}")
+
+
+
+
+
+
+
+
 def main():
-    print("=" * 60)
-    print("EXPERIMENT 3: Feature-Level Analysis")
+
+
     print("=" * 60)
 
-    # Load CLT (uses defaults from utils.py)
+
+    print("EXPERIMENT 3: Feature-Level Analysis (Dataset Scan)")
+
+
+    print("=" * 60)
+
+
+
+
+
+    # Load CLT
+
+
     clt = load_clt()
 
+
+
+
+
     # Compute cross-layer scores
+
+
     print("\nComputing cross-layer scores for all features...")
+
+
     scores = compute_feature_cross_layer_scores(clt)
 
-    # Find top features
-    print("Finding top cross-layer features...")
-    top_features = find_top_cross_layer_features(scores, top_k=100)
 
-    # Print results
-    print("\n" + "=" * 40)
-    print("TOP 20 CROSS-LAYER FEATURES")
-    print("=" * 40)
-    print(f"{'Layer':>6} | {'Feature':>8} | {'Score':>10}")
-    print("-" * 30)
-    for layer, feature, score in top_features[:20]:
-        print(f"{layer:>6} | {feature:>8} | {score:>10.2f}")
 
-    # Analyze feature activations
-    print("\nAnalyzing feature activations on test prompts...")
+
+
+    # Load model and dataset
+
+
+    print("\nLoading model and dataset...")
+
+
     model, tokenizer = load_model_and_tokenizer()
-    
-    # First, let's find features that are actually active on these prompts
-    print("Finding active features on test prompts...")
-    active_features_info = find_active_features(clt, model, tokenizer, TEST_PROMPTS, scores)
-    
-    print("\n" + "=" * 40)
-    print("ACTIVE FEATURES ANALYSIS (Features that fired)")
-    print("=" * 40)
-    for res in active_features_info[:5]:
-        print(f"Layer {res['layer']}, Feature {res['feature']} (Score: {res['cross_layer_score']:.2f})")
-        print(f"  Max Act: {res['max_act']:.2f}, Mean Act: {res['mean_act']:.4f}")
-        print(f"  Top Token: {res['top_token']}")
 
-    # Original analysis of top cross-layer features
-    activation_results = analyze_feature_activations(clt, model, tokenizer, top_features, TEST_PROMPTS)
+
+    
+
+
+    # Create dataset iterator
+
+
+    # 32k tokens should be enough to see common features fire
+
+
+    batch_iterator = get_token_batch_iterator(tokenizer, batch_size=8, seq_len=128, num_batches=32)
+
+
+    
+
+
+    # Find active features
+
+
+    print("Scanning dataset for active features...")
+
+
+    # Get top 200 active features to plot
+
+
+    active_features_info = find_active_features(clt, model, tokenizer, batch_iterator, scores, top_k=200)
+
+
+    
+
 
     print("\n" + "=" * 40)
-    print("HIGH CROSS-LAYER SCORE FEATURES ANALYSIS")
+
+
+    print("TOP 20 MOST ACTIVE FEATURES")
+
+
     print("=" * 40)
-    for result in activation_results[:5]:
-        print(f"\nLayer {result['layer']}, Feature {result['feature']} (score={result['cross_layer_score']:.2f}):")
-        max_act_all = max(a['max_act'] for a in result['activations'])
-        if max_act_all == 0:
-             print("  (Did not activate on test prompts)")
-        else:
-            for act in result['activations']:
-                if act['max_act'] > 0:
-                    print(f"  {act['prompt'][:30]}... Max: {act['max_act']:.3f}")
+
+
+    print(f"{'Layer':>6} | {'Feature':>8} | {'Max Act':>10} | {'Score':>8} | {'Top Token'}")
+
+
+    print("-" * 65)
+
+
+    for res in active_features_info[:20]:
+
+
+        token_str = res['top_token'].replace('\n', '\\n') if res['top_token'] else "None"
+
+
+        print(f"{res['layer']:>6} | {res['feature']:>8} | {res['max_act']:>10.2f} | {res['cross_layer_score']:>8.2f} | {token_str}")
+
+
+
 
 
     # Create figures
+
+
     figures_dir = Path(__file__).parent.parent / "figures"
+
+
     figures_dir.mkdir(exist_ok=True)
 
+
+
+
+
     plot_cross_layer_score_distribution(scores, figures_dir / "exp3_score_distribution.png")
-    plot_top_features_heatmap(top_features, figures_dir / "exp3_top_features.png")
+
+
+    plot_activation_vs_score(active_features_info, figures_dir / "exp3_activation_vs_score.png")
+
+
+
+
 
     # Save results
+
+
     results_path = figures_dir / "exp3_results.txt"
+
+
     with open(results_path, "w") as f:
-        f.write("Experiment 3: Feature-Level Analysis Results\n")
-        f.write("=" * 50 + "\n\n")
-        f.write("Top 50 Cross-Layer Features:\n")
-        f.write(f"{'Layer':>6} | {'Feature':>8} | {'Score':>10}\n")
-        f.write("-" * 30 + "\n")
-        for layer, feature, score in top_features[:50]:
-            f.write(f"{layer:>6} | {feature:>8} | {score:>10.2f}\n")
+
+
+        f.write("Experiment 3: Feature-Level Analysis Results (Wikitext-2 Scan)\n")
+
+
+        f.write("=" * 60 + "\n\n")
+
+
+        f.write(f"{'Layer':>6} | {'Feature':>8} | {'Max Act':>10} | {'Score':>8} | {'Top Token'}\n")
+
+
+        f.write("-" * 65 + "\n")
+
+
+        for res in active_features_info:
+
+
+            token_str = res['top_token'].replace('\n', '\\n') if res['top_token'] else "None"
+
+
+            f.write(f"{res['layer']:>6} | {res['feature']:>8} | {res['max_act']:>10.2f} | {res['cross_layer_score']:>8.2f} | {token_str}\n")
+
+
+
+
 
     print(f"\nResults saved to {results_path}")
+
+
     print("\nExperiment 3 complete!")
 
-    return {
-        "scores": scores,
-        "top_features": top_features,
-        "activation_results": activation_results,
-    }
+
+    
+
+
+    return active_features_info
 
 
 if __name__ == "__main__":

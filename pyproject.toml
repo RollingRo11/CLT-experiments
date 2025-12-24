@@ -16,4 +16,5 @@ dependencies = [
     "numpy",
     "huggingface>=0.0.1",
     "accelerate>=1.12.0",
+    "datasets>=4.4.2",
 ]

@@ -200,6 +200,40 @@ def compute_l0(acts: torch.Tensor, skip_bos: bool = True) -> float:
     return (acts > 0).float().sum((-1, -2)).mean().item()
 
 
+def get_token_batch_iterator(tokenizer, batch_size=4, seq_len=128, num_batches=20, device=DEVICE):
+    """Yield batches of tokens from wikitext-2."""
+    from datasets import load_dataset
+    print(f"Loading wikitext-2 dataset (batch_size={batch_size}, seq_len={seq_len})...")
+    
+    # Use wikitext-2 test set
+    dataset = load_dataset("wikitext", "wikitext-2-raw-v1", split="test")
+    
+    # Flatten text
+    text = "\n\n".join(dataset["text"])
+    
+    # Tokenize all
+    print("Tokenizing dataset...")
+    all_tokens = tokenizer.encode(text, return_tensors="pt")[0] # [total_tokens]
+    
+    total_tokens = all_tokens.shape[0]
+    print(f"Total tokens in dataset: {total_tokens}")
+    
+    # Yield batches
+    curr = 0
+    for i in range(num_batches):
+        if curr + batch_size * seq_len > total_tokens:
+            print("Reached end of dataset.")
+            break
+            
+        batch = []
+        for _ in range(batch_size):
+            chunk = all_tokens[curr : curr + seq_len]
+            batch.append(chunk)
+            curr += seq_len
+            
+        yield torch.stack(batch).to(device)
+
+
 # Test prompts for experiments
 TEST_PROMPTS = [
     "The law of conservation of energy states that energy cannot be created or destroyed, only transformed.",
