@@ -1,11 +1,12 @@
-"Experiment 7: Downstream Component Targeting
+"""
+Experiment 7: Downstream Component Targeting
 
-Hypothesis: If the edge is a specific computation, it should \"target\" specific components 
-at the destination layer (e.g., \"I am writing specifically to trigger Attention Head 20.4\").
+Hypothesis: If the edge is a specific computation, it should "target" specific components 
+at the destination layer (e.g., "I am writing specifically to trigger Attention Head 20.4").
 
 The Test: Check if the cross-layer vector (v_cross) aligns significantly with the input 
 weights (W_Q, W_K, W_V, W_in) of attention heads or the MLP input at the destination layer L_out.
-"
+"""
 
 import torch
 import torch.nn.functional as F
