@@ -110,7 +110,7 @@ def analyze_feature_activations(clt, model, tokenizer, features: list, prompts: 
 def find_active_features(clt, model, tokenizer, prompts, scores, top_k=20):
     """Find features that activate the most on the given prompts."""
     # Accumulate max activation per feature across all prompts
-    max_acts = torch.zeros(NUM_LAYERS, clt.w_enc.shape[2], device=DEVICE)
+    max_acts = torch.zeros(NUM_LAYERS, clt.w_enc.shape[2], device=DEVICE, dtype=clt.w_enc.dtype)
     
     # Store token info for the max activation
     max_tokens = [[None for _ in range(clt.w_enc.shape[2])] for _ in range(NUM_LAYERS)]
