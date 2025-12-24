@@ -1,0 +1,17 @@
+[project]
+name = "clt-experiments"
+version = "0.1.0"
+description = "Cross-layer transcoder analysis experiments"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "torch",
+    "transformers",
+    "safetensors",
+    "huggingface-hub",
+    "einops",
+    "matplotlib",
+    "seaborn",
+    "pandas",
+    "numpy",
+]
