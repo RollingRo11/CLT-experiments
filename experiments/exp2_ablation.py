@@ -45,17 +45,30 @@ def evaluate_reconstruction(clt, model, tokenizer, prompts: list[str]) -> dict:
     all_fvu_per_layer = [[] for _ in range(NUM_LAYERS)]
     all_l0 = []
 
-    for prompt in prompts:
+    for i, prompt in enumerate(prompts):
         inputs = tokenizer.encode(prompt, return_tensors="pt", add_special_tokens=True).to(DEVICE)
 
         # Gather activations
         sae_input, sae_target = gather_clt_activations(model, NUM_LAYERS, inputs)
+
+        if i == 0:  # Debug first prompt
+            print(f"  DEBUG: sae_input shape: {sae_input.shape}, dtype: {sae_input.dtype}")
+            print(f"  DEBUG: sae_target shape: {sae_target.shape}, dtype: {sae_target.dtype}")
+
         sae_input = sae_input.to(clt.w_enc.dtype)
         sae_target = sae_target.to(clt.w_enc.dtype)
 
         # Run CLT
         sae_acts = clt.encode(sae_input)
         recon = clt.forward(sae_input)
+
+        if i == 0:  # Debug first prompt
+            print(f"  DEBUG: recon shape: {recon.shape}")
+            print(f"  DEBUG: recon has nan: {torch.isnan(recon).any()}")
+            print(f"  DEBUG: sae_target has nan: {torch.isnan(sae_target).any()}")
+            # Check variance
+            var = sae_target[1:].float().var()
+            print(f"  DEBUG: target variance: {var}")
 
         # Compute metrics
         fvu = compute_fvu(recon, sae_target)
