@@ -358,37 +358,37 @@ def main():
     
 
 
-        # Create dataset iterator
+            # Create dataset iterator
 
 
     
 
 
-        # 32k tokens should be enough to see common features fire
+            # 32k tokens should be enough to see common features fire
 
 
     
 
 
-        batch_iterator = get_token_batch_iterator(tokenizer, batch_size=8, seq_len=128, num_batches=64)
+            batch_iterator = get_token_batch_iterator(tokenizer, batch_size=8, seq_len=128, num_batches=64)
 
 
     
 
 
-        
+            
 
 
     
 
 
-        # Find active features
+            # Find active features
 
 
     
 
 
-        print("Scanning dataset for active features...")
+            print("Scanning dataset for active features...")
 
 
     # Get top 200 active features to plot
