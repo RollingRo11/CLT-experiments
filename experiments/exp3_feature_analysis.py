@@ -107,6 +107,64 @@ def analyze_feature_activations(clt, model, tokenizer, features: list, prompts: 
     return results
 
 
+def find_active_features(clt, model, tokenizer, prompts, scores, top_k=20):
+    """Find features that activate the most on the given prompts."""
+    # Accumulate max activation per feature across all prompts
+    max_acts = torch.zeros(NUM_LAYERS, clt.w_enc.shape[2], device=DEVICE)
+    
+    # Store token info for the max activation
+    max_tokens = [[None for _ in range(clt.w_enc.shape[2])] for _ in range(NUM_LAYERS)]
+
+    for prompt in prompts:
+        inputs = tokenizer.encode(prompt, return_tensors="pt", add_special_tokens=True).to(DEVICE)
+        tokens = tokenizer.convert_ids_to_tokens(inputs[0].tolist())
+        
+        sae_input, _ = gather_clt_activations(model, NUM_LAYERS, inputs)
+        sae_input = sae_input.to(clt.w_enc.dtype)
+
+        # encode returns [seq, layers, d_sae]
+        acts = clt.encode(sae_input)  
+        
+        # Check overall sparsity
+        l0 = (acts > 0).float().sum(dim=-1).mean().item()
+        print(f"  Prompt L0: {l0:.1f}")
+
+        # Update max acts
+        # acts: [seq, layers, d_sae] -> max over seq -> [layers, d_sae]
+        seq_max, seq_indices = acts.max(dim=0)
+        
+        update_mask = seq_max > max_acts
+        max_acts[update_mask] = seq_max[update_mask]
+        
+        # Store tokens for new maxes
+        update_indices = update_mask.nonzero()
+        for idx in update_indices:
+            l, f = idx[0].item(), idx[1].item()
+            token_idx = seq_indices[l, f].item()
+            if token_idx < len(tokens):
+                max_tokens[l][f] = tokens[token_idx]
+
+    # Find top k active features globally
+    flat_acts = max_acts.flatten()
+    top_indices = torch.topk(flat_acts, top_k).indices
+
+    results = []
+    for idx in top_indices:
+        layer = idx.item() // clt.w_enc.shape[2]
+        feature = idx.item() % clt.w_enc.shape[2]
+        
+        results.append({
+            "layer": layer,
+            "feature": feature,
+            "max_act": max_acts[layer, feature].item(),
+            "mean_act": 0.0, # Placeholder
+            "top_token": max_tokens[layer][feature],
+            "cross_layer_score": scores[layer, feature].item()
+        })
+    
+    return results
+
+
 def plot_cross_layer_score_distribution(scores: torch.Tensor, save_path: Path):
     """Plot distribution of cross-layer scores."""
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 5))
@@ -191,16 +249,35 @@ def main():
     # Analyze feature activations
     print("\nAnalyzing feature activations on test prompts...")
     model, tokenizer = load_model_and_tokenizer()
+    
+    # First, let's find features that are actually active on these prompts
+    print("Finding active features on test prompts...")
+    active_features_info = find_active_features(clt, model, tokenizer, TEST_PROMPTS, scores)
+    
+    print("\n" + "=" * 40)
+    print("ACTIVE FEATURES ANALYSIS (Features that fired)")
+    print("=" * 40)
+    for res in active_features_info[:5]:
+        print(f"Layer {res['layer']}, Feature {res['feature']} (Score: {res['cross_layer_score']:.2f})")
+        print(f"  Max Act: {res['max_act']:.2f}, Mean Act: {res['mean_act']:.4f}")
+        print(f"  Top Token: {res['top_token']}")
+
+    # Original analysis of top cross-layer features
     activation_results = analyze_feature_activations(clt, model, tokenizer, top_features, TEST_PROMPTS)
 
     print("\n" + "=" * 40)
-    print("FEATURE ACTIVATION ANALYSIS")
+    print("HIGH CROSS-LAYER SCORE FEATURES ANALYSIS")
     print("=" * 40)
     for result in activation_results[:5]:
         print(f"\nLayer {result['layer']}, Feature {result['feature']} (score={result['cross_layer_score']:.2f}):")
-        for act in result['activations']:
-            print(f"  {act['prompt'][:50]}...")
-            print(f"    Max activation: {act['max_act']:.3f}, Mean: {act['mean_act']:.3f}")
+        max_act_all = max(a['max_act'] for a in result['activations'])
+        if max_act_all == 0:
+             print("  (Did not activate on test prompts)")
+        else:
+            for act in result['activations']:
+                if act['max_act'] > 0:
+                    print(f"  {act['prompt'][:30]}... Max: {act['max_act']:.3f}")
+
 
     # Create figures
     figures_dir = Path(__file__).parent.parent / "figures"
