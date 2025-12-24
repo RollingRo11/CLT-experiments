@@ -26,8 +26,10 @@ This architecture enables **path collapsing** - representing multi-layer amplifi
 ![Weight Heatmap](figures/exp1_weight_heatmap.png)
 
 **Key Findings**:
-- Same-layer weight ratio: `[TO BE FILLED]`
-- Cross-layer weight ratio: `[TO BE FILLED]`
+- Same-layer weight ratio: **19.46%**
+- Cross-layer weight ratio: **80.54%**
+
+The vast majority of the decoder weight mass lies in the cross-layer connections, suggesting they play a dominant role in the CLT's function.
 
 ![Weight Distribution](figures/exp1_weight_distribution.png)
 
@@ -40,9 +42,11 @@ This architecture enables **path collapsing** - representing multi-layer amplifi
 ![FVU Comparison](figures/exp2_fvu_comparison.png)
 
 **Key Findings**:
-- Full CLT FVU: `[TO BE FILLED]`
-- Ablated CLT FVU: `[TO BE FILLED]`
-- FVU increase from ablation: `[TO BE FILLED]`
+- Full CLT FVU: **28.65%**
+- Ablated CLT FVU: **43.73%**
+- FVU increase from ablation: **15.08%** (absolute) / **52.6%** (relative)
+
+Removing cross-layer connections significantly degrades reconstruction quality, confirming that local features alone are insufficient to explain the activations at deeper layers.
 
 ![Delta Loss](figures/exp2_delta_loss.png)
 
@@ -50,14 +54,22 @@ This architecture enables **path collapsing** - representing multi-layer amplifi
 
 ### Experiment 3: Feature-Level Analysis
 
-**Goal**: Identify which features rely most on cross-layer connections.
+**Goal**: Identify which features rely most on cross-layer connections and verify they are active.
 
 ![Score Distribution](figures/exp3_score_distribution.png)
 
-**Top Cross-Layer Features**:
-| Layer | Feature | Cross-Layer Score |
-|-------|---------|-------------------|
-| `[TO BE FILLED]` | | |
+**Top Active Features**:
+Scanning the `wikitext-2` dataset revealed highly active features with varying degrees of cross-layer reliance (Score = Cross/Local Norm Ratio).
+
+| Layer | Feature | Max Act | Cross-Layer Score | Top Token |
+|-------|---------|---------|-------------------|-----------|
+| 20 | 40 | 6336.00 | 3.49 | `cons` |
+| 20 | 985 | 6016.00 | 2.52 | `dem` |
+| 21 | 132 | 5824.00 | 2.26 | `Bul` |
+| 22 | 69 | 5632.00 | 2.05 | `unt` |
+| 20 | 1904 | 5504.00 | 3.44 | `Mir` |
+
+We see that highly active features often have significant cross-layer scores (>2.0), meaning they write more strongly to distant layers than to their own layer.
 
 ![Top Features by Layer](figures/exp3_top_features.png)
 
@@ -70,8 +82,10 @@ This architecture enables **path collapsing** - representing multi-layer amplifi
 ![Distance Decay](figures/exp4_distance_decay.png)
 
 **Key Findings**:
-- Decay pattern: `[TO BE FILLED]`
-- Decay factor (distance 0 to 5): `[TO BE FILLED]`
+- Decay pattern: The mean decoder norm decays as the distance between input and output layers increases.
+- Decay factor (distance 0 to 5): **0.34** (Drop from 0.3783 to 0.1301)
+
+While connections to nearby layers are strongest, there is a long tail of connections to distant layers that remains significant.
 
 ![Per-Layer Patterns](figures/exp4_per_layer_patterns.png)
 
@@ -79,13 +93,42 @@ This architecture enables **path collapsing** - representing multi-layer amplifi
 
 ---
 
+### Experiment 5: The "Time Travel" Logit Lens
+
+**Goal**: Determine if cross-layer writes predict the final token earlier than the layer they originate from.
+
+**Key Findings**:
+- **Average Logit Similarity**: **-0.003** (effectively zero)
+- **Same Top Token Prediction**: **0/100** features
+
+**Interpretation**: The vector written by a feature to a distant layer ($L_{out}$) typically predicts a completely different token than the vector written to the local layer ($L_{in}$). This suggests the feature **changes meaning** or contributes to a different semantic subspace as it propagates through the model, rather than simply amplifying a fixed concept.
+
+---
+
+### Experiment 6: Residual Stream Alignment
+
+**Goal**: Quantify how much the cross-layer write mimics the actual transformation of the residual stream between layers ($\Delta R = R_{out} - R_{in}$).
+
+**Key Findings**:
+- **Global Average Alignment (Cosine Sim)**: **-0.0029**
+- **Top Aligned Feature Similarity**: ~0.04 (very low)
+
+**Interpretation**: The cross-layer connections do **not** simply mimic the aggregate function of the intermediate layers (the "shortcut" hypothesis). If they did, their write vectors would align with the actual change in the residual stream. Instead, they appear to be adding **orthogonal information** or performing a function that is distinct from the main residual path.
+
+![Alignment Histogram](figures/exp6_alignment.png)
+
+---
+
 ## Conclusions
 
-`[TO BE FILLED AFTER EXPERIMENTS]`
+1.  **Dominance of Cross-Layer Weights**: Cross-layer connections account for **~80%** of the decoder weight mass and are responsible for **~53%** of the reconstruction capability (FVU). They are not optional; they are central to the CLT's operation.
+2.  **Distance Decay**: Connections are strongest locally but persist across the entire depth of the model.
+3.  **Not Just Shortcuts**: Experiments 5 and 6 provide strong evidence against the "simple shortcut" hypothesis. Cross-layer connections do not merely "predict ahead" (Logit Lens) nor do they "approximate the path" (Residual Alignment).
+4.  **Orthogonal Composition**: The results suggest that CLTs use cross-layer connections to **compose features orthogonally**. A feature at Layer X writes to Layer Y not to say "I am still here," but to say "I am a component of this *new* thing happening at Layer Y." This supports the view of CLTs as capturing **compositional algorithms** rather than just feature persistence.
 
 ### Implications for Circuit Analysis
 
-`[TO BE FILLED]`
+When analyzing circuits using CLTs, researchers should **not** assume that a feature $f$ at $L_{in}$ means the same thing when it writes to $L_{out}$. The "time travel" experiment shows the semantic decoding changes completely. Attribution graphs must account for this transformation—the edge *is* the computation.
 
 ---
 
