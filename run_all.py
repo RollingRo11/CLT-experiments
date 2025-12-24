@@ -13,7 +13,7 @@ from exp2_ablation import main as exp2_main
 from exp4_distance_analysis import main as exp4_main
 from exp5_timetravel import main as exp5_main
 from exp6_shortcut import main as exp6_main
-from exp7_targeting import main as exp7_main
+from exp7_full_targeting_scan import main as exp7_main
 from exp9_transcoder_comparison import main as exp9_main
 
 
@@ -41,7 +41,7 @@ def main():
     print("\n[5/7] Running Experiment 6: Residual Alignment...")
     results["exp6"] = exp6_main()
 
-    print("\n[6/7] Running Experiment 7: Component Targeting (with Null Baseline)...")
+    print("\n[6/7] Running Experiment 7: Full Component Targeting Scan...")
     results["exp7"] = exp7_main()
 
     print("\n[7/7] Running Experiment 9: CLT vs Per-Layer Transcoder Comparison...")
