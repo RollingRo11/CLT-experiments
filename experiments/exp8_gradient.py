@@ -17,7 +17,7 @@ import matplotlib.pyplot as plt
 from pathlib import Path
 
 from utils import (
-    load_clt, load_model_and_tokenizer, get_token_batch_iterator,
+    load_clt, load_model_and_tokenizer, get_token_batch_iterator, gather_clt_activations,
     NUM_LAYERS, DEVICE
 )
 from exp5_timetravel import compute_feature_cross_layer_scores, get_top_features_and_targets
