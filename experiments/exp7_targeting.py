@@ -60,13 +60,14 @@ def get_layer_components(model, layer_idx):
     W_K = layer.self_attn.k_proj.weight
     W_V = layer.self_attn.v_proj.weight
     
-    num_heads = layer.self_attn.num_heads
-    head_dim = layer.self_attn.head_dim
+    num_heads = model.config.num_attention_heads
+    num_kv_heads = model.config.num_key_value_heads
+    head_dim = model.config.head_dim
     
     # Reshape to [num_heads, head_dim, d_model]
     W_Q = W_Q.view(num_heads, head_dim, -1)
-    W_K = W_K.view(layer.self_attn.num_key_value_heads, head_dim, -1) # GQA support
-    W_V = W_V.view(layer.self_attn.num_key_value_heads, head_dim, -1)
+    W_K = W_K.view(num_kv_heads, head_dim, -1) # GQA support
+    W_V = W_V.view(num_kv_heads, head_dim, -1)
     
     components['W_Q'] = W_Q
     components['W_K'] = W_K
