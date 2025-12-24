@@ -109,7 +109,7 @@ def compute_delta_loss(clt, model, tokenizer, prompt: str, layer_to_patch: int) 
     # outputs from hook: [batch, seq, d_model] - just this layer's output
     def patch_hook(mod, inputs, outputs, layer, recon_to_patch):
         # outputs is the layernorm output tensor, shape [batch, seq, d_model]
-        outputs[0, 1:] = recon_to_patch[1:, layer].to(outputs.dtype)
+        outputs[0, 1:] = recon_to_patch[0, 1:, layer].to(outputs.dtype)
         return outputs
 
     handle = model.model.layers[layer_to_patch].post_feedforward_layernorm.register_forward_hook(
