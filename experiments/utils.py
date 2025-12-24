@@ -145,13 +145,7 @@ def gather_acts_hook(mod, inputs, outputs, cache: dict, key: str, use_input: boo
     else:
         data = outputs[0] if isinstance(outputs, tuple) else outputs
         
-    # data is [batch, seq, d_model]. specific for this exp, take first batch item
-    if len(data.shape) == 3:
-        acts = data[0]
-    else:
-        acts = data
-        
-    cache[key] = acts.detach() # Detach to be safe
+    cache[key] = data.detach() # Keep full [batch, seq, dim]
     return outputs
 
 
@@ -176,6 +170,7 @@ def gather_clt_activations(model, num_layers: int, inputs: torch.Tensor):
         for handle in handles:
             handle.remove()
 
+    # Stack layers. Each entry is [batch, seq, dim] -> [batch, seq, layers, dim]
     return (
         torch.stack([act_cache[f"input_{layer}"] for layer in range(num_layers)], axis=-2),
         torch.stack([act_cache[f"target_{layer}"] for layer in range(num_layers)], axis=-2),
@@ -185,8 +180,9 @@ def gather_clt_activations(model, num_layers: int, inputs: torch.Tensor):
 def compute_fvu(recon: torch.Tensor, target: torch.Tensor, skip_bos: bool = True) -> float:
     """Compute fraction of variance unexplained."""
     if skip_bos:
-        recon = recon[1:]
-        target = target[1:]
+        # Assume [batch, seq, ...] layout
+        recon = recon[:, 1:]
+        target = target[:, 1:]
 
     mse = torch.mean((recon.float() - target.float()) ** 2)
     var = target.float().var()
@@ -196,7 +192,9 @@ def compute_fvu(recon: torch.Tensor, target: torch.Tensor, skip_bos: bool = True
 def compute_l0(acts: torch.Tensor, skip_bos: bool = True) -> float:
     """Compute average L0 (number of active features)."""
     if skip_bos:
-        acts = acts[1:]
+        # Assume [batch, seq, ...] layout
+        acts = acts[:, 1:]
+            
     return (acts > 0).float().sum((-1, -2)).mean().item()
 
 
