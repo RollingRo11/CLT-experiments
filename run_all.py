@@ -1,13 +1,21 @@
 #!/usr/bin/env python
 """Run all CLT cross-layer experiments."""
 
-import sys
 import os
+import sys
 
 # Add experiments to path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "experiments"))
 
 import torch
+from exp1_weight_analysis import main as exp1_main
+from exp2_ablation import main as exp2_main
+from exp3_feature_analysis import main as exp3_main
+from exp4_distance_analysis import main as exp4_main
+from exp5_timetravel import main as exp5_main
+from exp6_shortcut import main as exp6_main
+from exp7_targeting import main as exp7_main
+from exp8_gradient import main as exp8_main
 
 
 def main():
@@ -16,16 +24,6 @@ def main():
     print("\n" + "=" * 70)
     print("CLT CROSS-LAYER CONNECTIONS: FULL EXPERIMENT SUITE")
     print("=" * 70 + "\n")
-
-    # Run experiments
-    from exp1_weight_analysis import main as exp1_main
-    from exp2_ablation import main as exp2_main
-    from exp3_feature_analysis import main as exp3_main
-    from exp4_distance_analysis import main as exp4_main
-    from exp5_timetravel import main as exp5_main
-    from exp6_shortcut import main as exp6_main
-    from exp7_targeting import main as exp7_main
-    from exp8_gradient import main as exp8_main
 
     results = {}
 
