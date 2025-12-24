@@ -1,0 +1,12 @@
+Experiment 2: Cross-Layer Ablation Study Results
+==================================================
+
+[Full CLT]
+  FVU: nan% (+/- nan%)
+  L0: 106.2
+
+[Ablated CLT (no cross-layer)]
+  FVU: nan% (+/- nan%)
+  L0: 106.2
+
+FVU increase from ablation: nan%
