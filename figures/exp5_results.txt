@@ -1,25 +1,26 @@
-Experiment 5 Results
-Avg Logit Sim: 0.009
-Same Prediction: 2/500
+Experiment 5: Dynamic Logit Lens Results
+Activations Analyzed: 39397
+Mean Logit Diff (Cross - Local): -0.0040
+Fraction Cross > Local: 40.23%
 
-Top 20 Features:
-L0->L14 | Sim: -0.091 | ''y'' vs ''<unused62>''
-L8->L18 | Sim: 0.014 | '' classification'' vs ''ording''
-L4->L17 | Sim: 0.100 | ''�'' vs ''दाता''
-L8->L21 | Sim: -0.050 | ''�'' vs ''мун''
-L8->L20 | Sim: 0.013 | '' darn'' vs '' σαν''
-L8->L19 | Sim: 0.084 | ''�'' vs '"'}}"'
-L8->L13 | Sim: 0.028 | ''�'' vs '' Reader''
-L0->L17 | Sim: -0.055 | '' Allies'' vs '' Categor''
-L8->L18 | Sim: 0.062 | '' 今'' vs '' सर्वा''
-L4->L19 | Sim: -0.106 | ''<unused984>'' vs '' Kelas''
-L8->L23 | Sim: 0.052 | '' storica'' vs '' سنا''
-L8->L19 | Sim: 0.006 | ''<unused62>'' vs '' effets''
-L8->L18 | Sim: -0.062 | ''<unused984>'' vs ''太''
-L8->L21 | Sim: 0.073 | '" '*"' vs ''尻''
-L8->L17 | Sim: 0.020 | ''�'' vs ''Schw''
-L8->L21 | Sim: -0.044 | ''�'' vs ''၂''
-L8->L23 | Sim: 0.061 | ''ট্টগ্রাম'' vs ''之下''
-L8->L19 | Sim: -0.128 | ''iese'' vs ''<unused984>''
-L8->L20 | Sim: 0.052 | ''<unused62>'' vs ''ွက်''
-L8->L21 | Sim: -0.090 | ''<unused984>'' vs ''オン''
+Top Predictive Features:
+L24->L25 | Feat 3182 | Diff: 0.47
+L24->L25 | Feat 8469 | Diff: 0.40
+L23->L24 | Feat 6887 | Diff: 0.40
+L24->L25 | Feat 5154 | Diff: 0.35
+L23->L24 | Feat 8102 | Diff: 0.35
+L23->L24 | Feat 8102 | Diff: 0.35
+L23->L24 | Feat 8102 | Diff: 0.35
+L20->L21 | Feat 8361 | Diff: 0.34
+L21->L23 | Feat 633 | Diff: 0.33
+L23->L25 | Feat 1724 | Diff: 0.31
+L14->L17 | Feat 108 | Diff: 0.30
+L23->L24 | Feat 8102 | Diff: 0.29
+L23->L24 | Feat 8102 | Diff: 0.29
+L17->L18 | Feat 321 | Diff: 0.29
+L24->L25 | Feat 3784 | Diff: 0.27
+L23->L25 | Feat 8333 | Diff: 0.26
+L24->L25 | Feat 5436 | Diff: 0.25
+L23->L24 | Feat 4247 | Diff: 0.25
+L11->L12 | Feat 2899 | Diff: 0.24
+L23->L24 | Feat 4247 | Diff: 0.24
