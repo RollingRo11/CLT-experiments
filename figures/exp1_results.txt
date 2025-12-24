@@ -1,0 +1,9 @@
+Experiment 1: Cross-Layer Weight Analysis Results
+==================================================
+
+Same-layer weight norm: 9.8359
+Cross-layer weight norm: 0.0000
+Total weight norm: 9.8359
+
+Same-layer ratio: 100.00%
+Cross-layer ratio: 0.00%
