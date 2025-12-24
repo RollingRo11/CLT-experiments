@@ -26,10 +26,16 @@ This architecture enables **path collapsing** - representing multi-layer amplifi
 ![Weight Heatmap](figures/exp1_weight_heatmap.png)
 
 **Key Findings**:
-- Same-layer weight ratio: **19.46%**
-- Cross-layer weight ratio: **80.54%**
 
-The vast majority of the decoder weight mass lies in the cross-layer connections, suggesting they play a dominant role in the CLT's function.
+| Metric | Same-Layer | Cross-Layer |
+|--------|------------|-------------|
+| Connection count | 26 | 325 |
+| Total norm | 9.83 | 40.71 |
+| **Raw ratio** | 19.46% | **80.54%** |
+| Avg norm per connection | 0.378 | 0.125 |
+| **Normalized ratio** | **75.12%** | 24.88% |
+
+**Critical Insight**: The raw 80% figure is misleading. There are 12.5x more cross-layer connections than same-layer connections structurally. When normalized per-connection, **same-layer connections are 3x stronger** (0.378 vs 0.125 avg norm). The normalized cross-layer ratio is only **24.88%**.
 
 ![Weight Distribution](figures/exp1_weight_distribution.png)
 
@@ -49,29 +55,6 @@ The vast majority of the decoder weight mass lies in the cross-layer connections
 Removing cross-layer connections significantly degrades reconstruction quality, confirming that local features alone are insufficient to explain the activations at deeper layers.
 
 ![Delta Loss](figures/exp2_delta_loss.png)
-
----
-
-### Experiment 3: Feature-Level Analysis
-
-**Goal**: Identify which features rely most on cross-layer connections and verify they are active.
-
-![Score Distribution](figures/exp3_score_distribution.png)
-
-**Top Active Features**:
-Scanning the `wikitext-2` dataset revealed highly active features with varying degrees of cross-layer reliance (Score = Cross/Local Norm Ratio).
-
-| Layer | Feature | Max Act | Cross-Layer Score | Top Token |
-|-------|---------|---------|-------------------|-----------|
-| 20 | 40 | 6336.00 | 3.49 | `cons` |
-| 20 | 985 | 6016.00 | 2.52 | `dem` |
-| 21 | 132 | 5824.00 | 2.26 | `Bul` |
-| 22 | 69 | 5632.00 | 2.05 | `unt` |
-| 20 | 1904 | 5504.00 | 3.44 | `Mir` |
-
-We see that highly active features often have significant cross-layer scores (>2.0), meaning they write more strongly to distant layers than to their own layer.
-
-![Top Features by Layer](figures/exp3_top_features.png)
 
 ---
 
@@ -125,27 +108,28 @@ While connections to nearby layers are strongest, there is a long tail of connec
 
 ### Experiment 7: Downstream Component Targeting
 
+**Goal**: Determine if cross-layer writes "target" specific components at the destination layer, with a null baseline for comparison.
 
+**Null Baseline**: Random d_model vectors were compared against MLP/Attention weights to establish expected similarity by chance.
 
-**Goal**: Determine if cross-layer writes "target" specific components (like MLP neurons) at the destination layer.
-
-
+| Component | Null Mean | Null p95 | Null p99 | CLT Mean | % Above p95 | % Above p99 |
+|-----------|-----------|----------|----------|----------|-------------|-------------|
+| MLP | 0.110 | 0.128 | 0.138 | 0.115 | **9.7%** | **4.1%** |
+| Attention Q | 0.349 | 0.441 | 0.477 | 0.378 | **19.5%** | **13.3%** |
 
 **Key Findings**:
 
-- **Average Max MLP Similarity**: **0.1179**
+- **MLP Targeting**: 4.1% of cross-layer vectors exceed the null 99th percentile. Top targeters reach **0.45 similarity** (3.3x the null p99 of 0.138).
+  - L8→L22 (Feat 9815) targets Neuron 3366 with **0.450** similarity
+  - L3→L18 (Feat 443) targets Neuron 746 with **0.426** similarity
 
-- **Top Targeting Features**: Several features show remarkably high cosine similarity (>0.4) with specific MLP input neurons at the destination layer.
+- **Attention Targeting**: 13.3% exceed null p99. Top targeters reach **0.75 similarity** (1.6x null p99).
+  - L0→L1 (Feat 6499) targets Head 0 with **0.750** similarity
+  - Many features converge on **Layer 19** attention heads specifically
 
-    - L3->L18 (Feat 443) targets Neuron 746 with **0.426** similarity.
-
-    - L8->L17 (Feat 8235) targets Neuron 2418 with **0.400** similarity.
-
-
-
-**Interpretation**: This provides **positive evidence** that the "edge is the computation." The cross-layer connection isn't just dumping information; it is specifically shaping the vector to trigger particular neurons in the downstream MLP, effectively creating a "hardwired" functional circuit between a feature at Layer 3 and a specific computation at Layer 18.
-
-
+**Interpretation**: Cross-layer connections exhibit two distinct patterns:
+1. **MLP targeting** is sparse but precise—a small fraction of features (4%) form "hardwired" circuits to specific neurons
+2. **Attention targeting** is more prevalent (13%)—features systematically influence query patterns, especially at L19, suggesting cross-layer control over attention routing
 
 ![Targeting Plot](figures/exp7_targeting.png)
 
@@ -153,27 +137,27 @@ While connections to nearby layers are strongest, there is a long tail of connec
 
 ---
 
+### Experiment 9: CLT vs Per-Layer Transcoder Comparison
 
+**Goal**: Compare CLT reconstruction quality and feature reuse against per-layer transcoders (Gemma Scope 16k, medium L0).
 
-### Experiment 8: The "Task Adaptation" Gradient Test
+**Reconstruction Quality (FVU)**:
 
+| Layer | CLT | Per-Layer TC | Difference |
+|-------|-----|--------------|------------|
+| 7 | 9.03% | 3.71% | +5.32% |
+| 13 | 21.59% | 15.57% | +6.02% |
+| 17 | 30.62% | 15.68% | +14.94% |
+| 22 | 27.53% | 19.73% | +7.80% |
+| **Average** | **22.19%** | **13.67%** | **+8.52%** |
 
+**Feature Reuse (Path Collapsing)**:
+- Mean output layers per feature: **12.50**
+- Mean write span: **11.93 layers**
 
-**Goal**: Check if the cross-layer vector aligns better with the negative gradient (task requirement) at the destination layer than the local vector does.
+**Interpretation**: CLTs trade reconstruction fidelity for interpretability. Per-layer transcoders achieve ~40% lower FVU, but CLT features write to 12+ layers on average—confirming the "path collapsing" claim. A single CLT feature can represent what would require a chain of per-layer features, reducing circuit path length at the cost of per-layer reconstruction accuracy.
 
-
-
-**Key Findings**:
-
-- **Average Improvement**: **-0.0067** (negligible/slightly negative)
-
-- **Better Alignment Count**: **3/5** features showed improved alignment.
-
-
-
-**Interpretation**: The results on this small sample are inconclusive. While some features (like Feat 8859 at L0) showed better alignment with the downstream gradient, the overall trend didn't show a massive "task adaptation" effect. This might suggest that the "orthogonal composition" happening is more about internal feature construction than immediate loss reduction, or that the gradient signal at any single token step is too noisy to capture this long-term alignment.
-
-
+![Comparison Plot](figures/exp9_comparison.png)
 
 ---
 
@@ -181,23 +165,23 @@ While connections to nearby layers are strongest, there is a long tail of connec
 
 ## Conclusions
 
+1. **Cross-Layer Weight Distribution**: While raw weight mass is 80% cross-layer, this is structurally inflated. Per-connection, **same-layer connections are 3x stronger** (normalized ratio: 25% cross-layer). Cross-layer connections are numerous but individually weaker.
 
+2. **Reconstruction Tradeoff**: CLTs sacrifice per-layer reconstruction (~22% vs ~14% FVU) for path collapsing. Features span **12 layers on average**, representing multi-step computations as single units.
 
-1.  **Dominance of Cross-Layer Weights**: Cross-layer connections account for **~80%** of the decoder weight mass and are responsible for **~53%** of the reconstruction capability (FVU). They are central to the CLT's operation.
+3. **Not Just Shortcuts**: Experiments 5 and 6 disprove the "simple shortcut" hypothesis. Cross-layer writes don't predict tokens early (Logit Lens) nor approximate residual transformations.
 
-2.  **Distance Decay**: Connections are strongest locally but persist across the entire depth of the model.
-
-3.  **Not Just Shortcuts**: Experiments 5 and 6 provide strong evidence against the "simple shortcut" hypothesis. Cross-layer connections do not merely "predict ahead" (Logit Lens) nor do they "approximate the path" (Residual Alignment).
-
-4.  **Targeted Computation**: Experiment 7 provides the "smoking gun" for **orthogonal composition**. The fact that cross-layer vectors align significantly with specific downstream MLP neurons proves that these edges are performing a specific, targeted computational function—preparing inputs for future processing steps that wouldn't naturally occur from the local residual stream alone.
-
-
+4. **Two Targeting Patterns** (with null baseline validation):
+   - **MLP targeting**: Sparse but precise—4.1% of features significantly target specific neurons (up to 0.45 similarity, 3.3x null p99)
+   - **Attention targeting**: More prevalent—13.3% significantly target attention queries, with strong convergence on Layer 19 heads
 
 ### Implications for Circuit Analysis
 
+Cross-layer edges serve two distinct functions:
+1. **Sparse MLP circuits**: A small fraction form "hardwired" connections to specific downstream neurons—the "edge is the computation"
+2. **Systemic attention control**: A larger fraction modulates attention patterns at specific layers, suggesting cross-layer features can route information flow
 
-
-When analyzing circuits using CLTs, researchers should view the cross-layer edge as a **computational operator**. It transforms the feature from "Concept A" into "Pre-computation for Component B." The semantic meaning changes (as seen in the Logit Lens failure), but the functional meaning is precise (as seen in the MLP targeting). Attribution graphs are not just tracing information flow; they are tracing the functional rewiring of the model.
+The semantic meaning changes across layers (Logit Lens failure), but the functional targeting is precise. Attribution graphs trace both direct computation and attention routing.
 
 
 
