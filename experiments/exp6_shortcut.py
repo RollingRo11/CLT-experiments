@@ -176,8 +176,8 @@ def main():
         f.write(f"Global Average Sim: {global_avg:.4f}\n")
         f.write(f"Activations Analyzed: {total_sims}\n\n")
         f.write("Top Aligned Features:\n")
-        for f in sorted_feats[:50]:
-            f.write(f"L{f['l_in']}->L{f['l_out']} | Feat {f['f_idx']} | Sim: {f['avg_sim']:.3f} | n={f['count']}\n")
+        for feat in sorted_feats[:50]:
+            f.write(f"L{feat['l_in']}->L{feat['l_out']} | Feat {feat['f_idx']} | Sim: {feat['avg_sim']:.3f} | n={feat['count']}\n")
 
     print(f"\nResults saved to {figures_dir / 'exp6_results.txt'}")
 
