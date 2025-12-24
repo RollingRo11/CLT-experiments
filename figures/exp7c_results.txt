@@ -1,0 +1,188 @@
+Experiment 7c: Full MLP Targeting Scan
+============================================================
+
+[SUMMARY]
+Total scanned: 3,276,000
+Above null p99: 450,814 (13.76%)
+Null p99 threshold: 0.1406
+
+[TARGET LAYER DISTRIBUTION]
+  Layer  1:  2335
+  Layer  2:  3539
+  Layer  3: 15305
+  Layer  4: 20865
+  Layer  5:  8894
+  Layer  6:  6292
+  Layer  7:  4450
+  Layer  8:  3635
+  Layer  9:  8957
+  Layer 10:  7876
+  Layer 11: 14210
+  Layer 12: 16245
+  Layer 13: 10936
+  Layer 14: 11601
+  Layer 15: 18474
+  Layer 16: 45343
+  Layer 17: 36822
+  Layer 18: 23318
+  Layer 19: 15239
+  Layer 20: 16669
+  Layer 21: 11561
+  Layer 22: 15458
+  Layer 23: 13890
+  Layer 24: 25192
+  Layer 25: 93708
+
+[MOST TARGETED NEURONS]
+  Layer  4 Neuron  5600: 9473 targeters
+  Layer  3 Neuron  2780: 9072 targeters
+  Layer 25 Neuron   948: 5599 targeters
+  Layer  4 Neuron  1834: 2719 targeters
+  Layer 17 Neuron  1118: 2206 targeters
+  Layer 25 Neuron  2947: 1937 targeters
+  Layer  4 Neuron  1664: 1517 targeters
+  Layer 25 Neuron  4377: 1344 targeters
+  Layer 25 Neuron  5619: 1330 targeters
+  Layer 25 Neuron  1074: 1209 targeters
+  Layer 24 Neuron  1648: 1201 targeters
+  Layer 25 Neuron  3723: 1167 targeters
+  Layer 12 Neuron  1157: 1103 targeters
+  Layer 25 Neuron    18: 1027 targeters
+  Layer 25 Neuron  6089: 1023 targeters
+  Layer 25 Neuron  2600:  993 targeters
+  Layer 25 Neuron  3634:  963 targeters
+  Layer 25 Neuron  1561:  927 targeters
+  Layer 16 Neuron  3688:  793 targeters
+  Layer 23 Neuron   921:  786 targeters
+  Layer 25 Neuron  1606:  758 targeters
+  Layer 25 Neuron  3265:  714 targeters
+  Layer 25 Neuron  2582:  705 targeters
+  Layer  4 Neuron  2097:  691 targeters
+  Layer 25 Neuron  6153:  675 targeters
+  Layer 25 Neuron  2548:  660 targeters
+  Layer 25 Neuron  2737:  648 targeters
+  Layer 16 Neuron  4830:  633 targeters
+  Layer 25 Neuron  4666:  610 targeters
+  Layer 24 Neuron  1636:  599 targeters
+  Layer 25 Neuron  6358:  593 targeters
+  Layer 22 Neuron  4009:  591 targeters
+  Layer 25 Neuron  3307:  584 targeters
+  Layer 22 Neuron   890:  570 targeters
+  Layer 25 Neuron  4510:  570 targeters
+  Layer 20 Neuron  6540:  554 targeters
+  Layer 25 Neuron  1666:  547 targeters
+  Layer 25 Neuron  3382:  509 targeters
+  Layer 25 Neuron  5076:  497 targeters
+  Layer 21 Neuron  2185:  491 targeters
+  Layer 25 Neuron    83:  482 targeters
+  Layer 25 Neuron  2717:  466 targeters
+  Layer 25 Neuron   549:  466 targeters
+  Layer 25 Neuron  6852:  455 targeters
+  Layer 24 Neuron   572:  452 targeters
+  Layer 25 Neuron  6499:  432 targeters
+  Layer 25 Neuron  6472:  430 targeters
+  Layer 25 Neuron  6429:  417 targeters
+  Layer 25 Neuron  4324:  407 targeters
+  Layer 19 Neuron  1869:  401 targeters
+
+[TOP 100 TARGETERS]
+  L18->L22 | Feat  6775 | Cos: +0.793 | Neuron 890
+  L22->L25 | Feat  2618 | Cos: -0.784 | Neuron 6861
+  L11->L16 | Feat  7378 | Cos: +0.778 | Neuron 4963
+  L20->L22 | Feat   406 | Cos: +0.766 | Neuron 890
+  L17->L19 | Feat  9993 | Cos: -0.758 | Neuron 6568
+  L20->L25 | Feat  9244 | Cos: -0.756 | Neuron 3949
+  L15->L22 | Feat  3331 | Cos: +0.754 | Neuron 890
+  L21->L25 | Feat  7410 | Cos: -0.752 | Neuron 1413
+  L16->L25 | Feat  4539 | Cos: -0.750 | Neuron 752
+  L16->L25 | Feat  2058 | Cos: -0.747 | Neuron 1080
+  L14->L16 | Feat  7435 | Cos: -0.741 | Neuron 2524
+  L10->L16 | Feat  1455 | Cos: +0.737 | Neuron 4963
+  L23->L24 | Feat   323 | Cos: +0.734 | Neuron 3457
+  L22->L25 | Feat   879 | Cos: +0.727 | Neuron 5758
+  L21->L25 | Feat  5484 | Cos: -0.726 | Neuron 2280
+  L20->L25 | Feat   406 | Cos: -0.725 | Neuron 6514
+  L17->L25 | Feat  2714 | Cos: -0.721 | Neuron 1080
+  L17->L25 | Feat  3216 | Cos: -0.719 | Neuron 6800
+  L16->L25 | Feat  2635 | Cos: -0.718 | Neuron 1001
+  L17->L24 | Feat  9287 | Cos: -0.718 | Neuron 2495
+  L17->L25 | Feat   219 | Cos: -0.718 | Neuron 6704
+  L11->L16 | Feat  1202 | Cos: -0.718 | Neuron 2524
+  L20->L25 | Feat  2966 | Cos: -0.717 | Neuron 5615
+  L22->L25 | Feat  6504 | Cos: -0.714 | Neuron 5615
+  L22->L24 | Feat  4146 | Cos: +0.713 | Neuron 3496
+  L21->L25 | Feat  6408 | Cos: -0.711 | Neuron 104
+  L17->L25 | Feat  3840 | Cos: -0.710 | Neuron 752
+  L 4->L 7 | Feat  8228 | Cos: -0.709 | Neuron 3798
+  L17->L25 | Feat  8550 | Cos: -0.708 | Neuron 6735
+  L17->L25 | Feat  2503 | Cos: -0.707 | Neuron 5615
+  L20->L25 | Feat   785 | Cos: +0.706 | Neuron 4741
+  L17->L24 | Feat  1527 | Cos: -0.706 | Neuron 6494
+  L19->L25 | Feat   483 | Cos: -0.706 | Neuron 602
+  L20->L25 | Feat  3198 | Cos: +0.705 | Neuron 2947
+  L19->L23 | Feat  2003 | Cos: -0.705 | Neuron 5073
+  L16->L25 | Feat  8493 | Cos: -0.702 | Neuron 1551
+  L17->L19 | Feat  8610 | Cos: -0.701 | Neuron 4435
+  L21->L25 | Feat   170 | Cos: -0.701 | Neuron 4096
+  L16->L25 | Feat  6065 | Cos: -0.699 | Neuron 830
+  L16->L25 | Feat  2807 | Cos: -0.698 | Neuron 1080
+  L17->L24 | Feat  9993 | Cos: -0.696 | Neuron 6530
+  L20->L22 | Feat  1849 | Cos: +0.696 | Neuron 1722
+  L19->L25 | Feat  3425 | Cos: +0.692 | Neuron 5758
+  L20->L25 | Feat  2198 | Cos: -0.691 | Neuron 1080
+  L23->L25 | Feat  1101 | Cos: +0.690 | Neuron 5758
+  L16->L24 | Feat  3156 | Cos: +0.690 | Neuron 1648
+  L19->L25 | Feat  4914 | Cos: -0.690 | Neuron 3756
+  L17->L25 | Feat  1057 | Cos: -0.690 | Neuron 4191
+  L21->L25 | Feat  4806 | Cos: -0.689 | Neuron 5537
+  L22->L25 | Feat   241 | Cos: -0.689 | Neuron 4989
+  L16->L25 | Feat  4525 | Cos: -0.689 | Neuron 401
+  L16->L24 | Feat  8051 | Cos: -0.689 | Neuron 3433
+  L19->L25 | Feat  3771 | Cos: -0.688 | Neuron 5785
+  L17->L25 | Feat   904 | Cos: -0.687 | Neuron 3571
+  L18->L24 | Feat  5769 | Cos: -0.686 | Neuron 3433
+  L23->L25 | Feat  2582 | Cos: -0.685 | Neuron 3736
+  L17->L25 | Feat  9006 | Cos: -0.684 | Neuron 959
+  L16->L24 | Feat  8526 | Cos: -0.684 | Neuron 6403
+  L15->L25 | Feat  3544 | Cos: -0.684 | Neuron 959
+  L16->L25 | Feat   397 | Cos: -0.683 | Neuron 3452
+  L17->L25 | Feat  5354 | Cos: -0.683 | Neuron 3824
+  L19->L25 | Feat  5626 | Cos: -0.682 | Neuron 5615
+  L17->L25 | Feat  6664 | Cos: -0.682 | Neuron 2812
+  L18->L19 | Feat  1825 | Cos: +0.682 | Neuron 2928
+  L 0->L12 | Feat  4115 | Cos: -0.681 | Neuron 4595
+  L16->L25 | Feat  1200 | Cos: -0.680 | Neuron 3538
+  L 6->L19 | Feat  1469 | Cos: +0.680 | Neuron 5235
+  L24->L25 | Feat  1671 | Cos: -0.678 | Neuron 3986
+  L16->L25 | Feat  2597 | Cos: -0.677 | Neuron 5537
+  L16->L25 | Feat  5833 | Cos: -0.677 | Neuron 2845
+  L18->L25 | Feat  5851 | Cos: -0.677 | Neuron 1001
+  L17->L25 | Feat  2508 | Cos: -0.677 | Neuron 2229
+  L20->L25 | Feat  6882 | Cos: -0.677 | Neuron 5959
+  L19->L20 | Feat  9627 | Cos: -0.677 | Neuron 2367
+  L24->L25 | Feat  2673 | Cos: -0.676 | Neuron 5622
+  L16->L25 | Feat  7936 | Cos: -0.675 | Neuron 1080
+  L23->L25 | Feat  4148 | Cos: +0.674 | Neuron 6619
+  L17->L25 | Feat  3376 | Cos: -0.674 | Neuron 3538
+  L22->L25 | Feat  6175 | Cos: -0.673 | Neuron 6717
+  L16->L25 | Feat  1092 | Cos: +0.673 | Neuron 4741
+  L16->L25 | Feat  2109 | Cos: -0.672 | Neuron 5785
+  L19->L25 | Feat  7492 | Cos: -0.672 | Neuron 1080
+  L17->L25 | Feat  3802 | Cos: -0.671 | Neuron 602
+  L21->L25 | Feat  5202 | Cos: -0.671 | Neuron 3612
+  L14->L15 | Feat   198 | Cos: +0.671 | Neuron 4932
+  L20->L22 | Feat  6206 | Cos: -0.670 | Neuron 6077
+  L 8->L25 | Feat  7016 | Cos: +0.670 | Neuron 3824
+  L18->L25 | Feat   200 | Cos: +0.669 | Neuron 3265
+  L16->L25 | Feat  3383 | Cos: -0.669 | Neuron 2845
+  L21->L25 | Feat  6413 | Cos: +0.667 | Neuron 3265
+  L19->L25 | Feat  5773 | Cos: -0.667 | Neuron 5765
+  L16->L25 | Feat   106 | Cos: -0.667 | Neuron 830
+  L18->L25 | Feat  7286 | Cos: -0.667 | Neuron 4700
+  L24->L25 | Feat   890 | Cos: -0.666 | Neuron 4120
+  L18->L25 | Feat  5757 | Cos: -0.666 | Neuron 1623
+  L18->L20 | Feat  1277 | Cos: -0.666 | Neuron 2492
+  L23->L24 | Feat  3137 | Cos: -0.666 | Neuron 2436
+  L16->L25 | Feat  9486 | Cos: -0.665 | Neuron 959
+  L21->L25 | Feat  6879 | Cos: -0.665 | Neuron 1561
+  L16->L25 | Feat  5602 | Cos: -0.664 | Neuron 2812
