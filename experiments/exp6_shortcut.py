@@ -1,8 +1,9 @@
-"Experiment 6: Residual Stream Alignment (The \"Shortcut\" Test)
+"""
+Experiment 6: Residual Stream Alignment (The "Shortcut" Test)
 
 Goal: Quantify how much the cross-layer write mimics the actual transformation
 of the residual stream between layers.
-"
+"""
 
 import torch
 import torch.nn.functional as F
