@@ -138,7 +138,7 @@ def plot_weight_distribution(clt, save_path: Path):
     for l_in in range(num_layers):
         for l_out in range(l_in, num_layers):  # Only valid outputs (l_out >= l_in)
             dec_vectors = w_dec[l_in, :, l_out, :]
-            feature_norms = torch.norm(dec_vectors, dim=-1).cpu().numpy()
+            feature_norms = torch.norm(dec_vectors.float(), dim=-1).cpu().numpy()
 
             if l_in == l_out:
                 same_layer_norms.extend(feature_norms)
