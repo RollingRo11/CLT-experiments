@@ -1,0 +1,10 @@
+Experiment 8: Task Adaptation Gradient Test
+Avg Improvement: -0.0067
+Better Alignment Count: 3/5
+
+Top Improved Features:
+Feat 8859 (L0): Local=-0.021, Cross=0.008, Diff=0.029
+Feat 9863 (L0): Local=-0.013, Cross=0.003, Diff=0.015
+Feat 8644 (L0): Local=-0.001, Cross=0.000, Diff=0.001
+Feat 8845 (L8): Local=0.008, Cross=-0.022, Diff=-0.030
+Feat 120 (L4): Local=0.037, Cross=-0.012, Diff=-0.049

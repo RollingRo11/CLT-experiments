@@ -1,0 +1,54 @@
+Experiment 7: Downstream Component Targeting Results
+Avg Max MLP Sim: 0.1179
+
+Top MLP Targeters:
+L3->L18 | Feat 443 | Sim: 0.426 | Neuron 746
+L8->L17 | Feat 8235 | Sim: 0.400 | Neuron 2418
+L8->L13 | Feat 369 | Sim: 0.372 | Neuron 1044
+L8->L19 | Feat 703 | Sim: 0.326 | Neuron 6367
+L8->L14 | Feat 327 | Sim: 0.291 | Neuron 1022
+L4->L15 | Feat 773 | Sim: 0.197 | Neuron 5122
+L8->L15 | Feat 9390 | Sim: 0.145 | Neuron 2095
+L8->L19 | Feat 8815 | Sim: 0.144 | Neuron 6091
+L8->L12 | Feat 2031 | Sim: 0.143 | Neuron 6091
+L8->L16 | Feat 550 | Sim: 0.142 | Neuron 3746
+L6->L17 | Feat 665 | Sim: 0.139 | Neuron 6803
+L8->L23 | Feat 10006 | Sim: 0.138 | Neuron 913
+L8->L19 | Feat 5927 | Sim: 0.136 | Neuron 436
+L8->L14 | Feat 5750 | Sim: 0.135 | Neuron 718
+L6->L17 | Feat 73 | Sim: 0.133 | Neuron 1364
+L8->L14 | Feat 9710 | Sim: 0.131 | Neuron 910
+L8->L21 | Feat 9784 | Sim: 0.131 | Neuron 933
+L8->L21 | Feat 5152 | Sim: 0.129 | Neuron 2985
+L8->L23 | Feat 1279 | Sim: 0.129 | Neuron 1711
+L5->L17 | Feat 649 | Sim: 0.129 | Neuron 6239
+L8->L21 | Feat 5991 | Sim: 0.128 | Neuron 5637
+L4->L19 | Feat 528 | Sim: 0.128 | Neuron 6850
+L8->L20 | Feat 2565 | Sim: 0.127 | Neuron 2563
+L4->L18 | Feat 8615 | Sim: 0.126 | Neuron 1679
+L8->L20 | Feat 7730 | Sim: 0.125 | Neuron 6738
+L8->L20 | Feat 5078 | Sim: 0.125 | Neuron 2429
+L8->L14 | Feat 716 | Sim: 0.124 | Neuron 4719
+L8->L15 | Feat 2569 | Sim: 0.124 | Neuron 120
+L8->L21 | Feat 10063 | Sim: 0.124 | Neuron 4184
+L4->L20 | Feat 9917 | Sim: 0.123 | Neuron 5001
+L8->L21 | Feat 6577 | Sim: 0.123 | Neuron 3353
+L8->L13 | Feat 3302 | Sim: 0.123 | Neuron 6326
+L8->L19 | Feat 523 | Sim: 0.122 | Neuron 1670
+L8->L21 | Feat 9546 | Sim: 0.122 | Neuron 694
+L8->L20 | Feat 1133 | Sim: 0.122 | Neuron 4452
+L6->L17 | Feat 676 | Sim: 0.121 | Neuron 4536
+L8->L21 | Feat 2019 | Sim: 0.121 | Neuron 6736
+L8->L22 | Feat 4416 | Sim: 0.121 | Neuron 6547
+L8->L20 | Feat 4828 | Sim: 0.121 | Neuron 3171
+L8->L21 | Feat 4612 | Sim: 0.120 | Neuron 1851
+L8->L20 | Feat 4320 | Sim: 0.120 | Neuron 6845
+L8->L13 | Feat 457 | Sim: 0.120 | Neuron 5614
+L8->L18 | Feat 9322 | Sim: 0.120 | Neuron 335
+L8->L14 | Feat 1001 | Sim: 0.119 | Neuron 684
+L8->L20 | Feat 5147 | Sim: 0.119 | Neuron 6260
+L0->L15 | Feat 8859 | Sim: 0.119 | Neuron 4837
+L8->L18 | Feat 1851 | Sim: 0.118 | Neuron 1182
+L8->L21 | Feat 8751 | Sim: 0.118 | Neuron 2981
+L8->L20 | Feat 9082 | Sim: 0.118 | Neuron 6892
+L4->L19 | Feat 4009 | Sim: 0.118 | Neuron 2225
