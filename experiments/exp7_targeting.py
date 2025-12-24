@@ -194,7 +194,7 @@ def main():
     
     # Get top features
     scores = compute_feature_cross_layer_scores(clt)
-    top_features = get_top_features_and_targets(clt, scores, top_k=200)
+    top_features = get_top_features_and_targets(clt, scores, top_k=1000)
     
     # Analyze
     results = analyze_targeting(clt, model, top_features)

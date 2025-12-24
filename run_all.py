@@ -22,20 +22,39 @@ def main():
     from exp2_ablation import main as exp2_main
     from exp3_feature_analysis import main as exp3_main
     from exp4_distance_analysis import main as exp4_main
+    from exp5_timetravel import main as exp5_main
+    from exp6_shortcut import main as exp6_main
+    from exp7_targeting import main as exp7_main
+    from exp8_gradient import main as exp8_main
 
     results = {}
 
-    print("\n[1/4] Running Experiment 1: Weight Analysis...")
+    print("\n[1/8] Running Experiment 1: Weight Analysis...")
     results["exp1"] = exp1_main()
 
-    print("\n[2/4] Running Experiment 2: Ablation Study...")
+    print("\n[2/8] Running Experiment 2: Ablation Study...")
     results["exp2"] = exp2_main()
 
-    print("\n[3/4] Running Experiment 3: Feature Analysis...")
+    print("\n[3/8] Running Experiment 3: Feature Analysis...")
     results["exp3"] = exp3_main()
 
-    print("\n[4/4] Running Experiment 4: Distance Analysis...")
+    print("\n[4/8] Running Experiment 4: Distance Analysis...")
     results["exp4"] = exp4_main()
+
+    print("\n[5/8] Running Experiment 5: Time Travel Logit Lens...")
+    results["exp5"] = exp5_main()
+
+    print("\n[6/8] Running Experiment 6: Residual Alignment...")
+    results["exp6"] = exp6_main()
+
+    print("\n[7/8] Running Experiment 7: Component Targeting...")
+    results["exp7"] = exp7_main()
+
+    print("\n[8/8] Running Experiment 8: Gradient Alignment...")
+    # Exp 8 needs grad enabled, handled inside its main or we can set it here
+    torch.set_grad_enabled(True)
+    results["exp8"] = exp8_main()
+    torch.set_grad_enabled(False)
 
     print("\n" + "=" * 70)
     print("ALL EXPERIMENTS COMPLETE!")

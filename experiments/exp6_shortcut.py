@@ -127,10 +127,10 @@ def main():
     # 1. Select top features (using Exp 5 logic)
     print("\nSelecting top features based on cross-layer score...")
     scores = compute_feature_cross_layer_scores(clt)
-    top_features = get_top_features_and_targets(clt, scores, top_k=200) # Track top 200
+    top_features = get_top_features_and_targets(clt, scores, top_k=500) # Track top 500
     
     # 2. Iterate dataset
-    batch_iterator = get_token_batch_iterator(tokenizer, batch_size=8, seq_len=128, num_batches=20)
+    batch_iterator = get_token_batch_iterator(tokenizer, batch_size=8, seq_len=128, num_batches=40)
     
     # 3. Analyze
     results = analyze_shortcut_alignment(clt, model, tokenizer, top_features, batch_iterator)

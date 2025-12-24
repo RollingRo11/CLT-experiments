@@ -240,7 +240,7 @@ def main():
     
     # Top features
     scores = compute_feature_cross_layer_scores(clt)
-    top_features = get_top_features_and_targets(clt, scores, top_k=50) # Smaller set for speed
+    top_features = get_top_features_and_targets(clt, scores, top_k=200) # Increased set
     
     # Setup feature map
     feature_map = {}
@@ -258,7 +258,7 @@ def main():
             }
             
     # Data
-    batch_iterator = get_token_batch_iterator(tokenizer, batch_size=4, seq_len=64, num_batches=10)
+    batch_iterator = get_token_batch_iterator(tokenizer, batch_size=4, seq_len=64, num_batches=40)
     
     # Run
     from utils import gather_clt_activations # explicit import

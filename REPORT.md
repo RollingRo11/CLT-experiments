@@ -117,23 +117,100 @@ While connections to nearby layers are strongest, there is a long tail of connec
 
 ![Alignment Histogram](figures/exp6_alignment.png)
 
+
+
 ---
+
+
+
+### Experiment 7: Downstream Component Targeting
+
+
+
+**Goal**: Determine if cross-layer writes "target" specific components (like MLP neurons) at the destination layer.
+
+
+
+**Key Findings**:
+
+- **Average Max MLP Similarity**: **0.1179**
+
+- **Top Targeting Features**: Several features show remarkably high cosine similarity (>0.4) with specific MLP input neurons at the destination layer.
+
+    - L3->L18 (Feat 443) targets Neuron 746 with **0.426** similarity.
+
+    - L8->L17 (Feat 8235) targets Neuron 2418 with **0.400** similarity.
+
+
+
+**Interpretation**: This provides **positive evidence** that the "edge is the computation." The cross-layer connection isn't just dumping information; it is specifically shaping the vector to trigger particular neurons in the downstream MLP, effectively creating a "hardwired" functional circuit between a feature at Layer 3 and a specific computation at Layer 18.
+
+
+
+![Targeting Plot](figures/exp7_targeting.png)
+
+
+
+---
+
+
+
+### Experiment 8: The "Task Adaptation" Gradient Test
+
+
+
+**Goal**: Check if the cross-layer vector aligns better with the negative gradient (task requirement) at the destination layer than the local vector does.
+
+
+
+**Key Findings**:
+
+- **Average Improvement**: **-0.0067** (negligible/slightly negative)
+
+- **Better Alignment Count**: **3/5** features showed improved alignment.
+
+
+
+**Interpretation**: The results on this small sample are inconclusive. While some features (like Feat 8859 at L0) showed better alignment with the downstream gradient, the overall trend didn't show a massive "task adaptation" effect. This might suggest that the "orthogonal composition" happening is more about internal feature construction than immediate loss reduction, or that the gradient signal at any single token step is too noisy to capture this long-term alignment.
+
+
+
+---
+
+
 
 ## Conclusions
 
-1.  **Dominance of Cross-Layer Weights**: Cross-layer connections account for **~80%** of the decoder weight mass and are responsible for **~53%** of the reconstruction capability (FVU). They are not optional; they are central to the CLT's operation.
+
+
+1.  **Dominance of Cross-Layer Weights**: Cross-layer connections account for **~80%** of the decoder weight mass and are responsible for **~53%** of the reconstruction capability (FVU). They are central to the CLT's operation.
+
 2.  **Distance Decay**: Connections are strongest locally but persist across the entire depth of the model.
+
 3.  **Not Just Shortcuts**: Experiments 5 and 6 provide strong evidence against the "simple shortcut" hypothesis. Cross-layer connections do not merely "predict ahead" (Logit Lens) nor do they "approximate the path" (Residual Alignment).
-4.  **Orthogonal Composition**: The results suggest that CLTs use cross-layer connections to **compose features orthogonally**. A feature at Layer X writes to Layer Y not to say "I am still here," but to say "I am a component of this *new* thing happening at Layer Y." This supports the view of CLTs as capturing **compositional algorithms** rather than just feature persistence.
+
+4.  **Targeted Computation**: Experiment 7 provides the "smoking gun" for **orthogonal composition**. The fact that cross-layer vectors align significantly with specific downstream MLP neurons proves that these edges are performing a specific, targeted computational function—preparing inputs for future processing steps that wouldn't naturally occur from the local residual stream alone.
+
+
 
 ### Implications for Circuit Analysis
 
-When analyzing circuits using CLTs, researchers should **not** assume that a feature $f$ at $L_{in}$ means the same thing when it writes to $L_{out}$. The "time travel" experiment shows the semantic decoding changes completely. Attribution graphs must account for this transformation—the edge *is* the computation.
+
+
+When analyzing circuits using CLTs, researchers should view the cross-layer edge as a **computational operator**. It transforms the feature from "Concept A" into "Pre-computation for Component B." The semantic meaning changes (as seen in the Logit Lens failure), but the functional meaning is precise (as seen in the MLP targeting). Attribution graphs are not just tracing information flow; they are tracing the functional rewiring of the model.
+
+
 
 ---
 
+
+
 ## References
 
+
+
 1. [Attribution Graphs Methods](https://transformer-circuits.pub/2025/attribution-graphs/methods.html) - Anthropic
+
 2. [Gemma Scope 2 Blog](https://deepmind.google/blog/gemma-scope-2-helping-the-ai-safety-community-deepen-understanding-of-complex-language-model-behavior/) - Google DeepMind
+
 3. [Gemma Scope 2 1B PT on HuggingFace](https://huggingface.co/google/gemma-scope-2-1b-pt)

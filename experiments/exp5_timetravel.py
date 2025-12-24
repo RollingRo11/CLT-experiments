@@ -169,8 +169,8 @@ def main():
     scores = compute_feature_cross_layer_scores(clt)
     
     # 2. Get top candidates
-    print("Selecting top 100 features...")
-    top_features = get_top_features_and_targets(clt, scores, top_k=100)
+    print("Selecting top 500 features...")
+    top_features = get_top_features_and_targets(clt, scores, top_k=500)
     
     # 3. Analyze
     results = analyze_logit_diffs(clt, model, tokenizer, top_features)
