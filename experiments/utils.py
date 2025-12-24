@@ -10,7 +10,15 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 
 
 NUM_LAYERS = 26  # Gemma 3 1B has 26 layers
-DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
+
+def get_device():
+    if torch.cuda.is_available():
+        return "cuda"
+    elif torch.backends.mps.is_available():
+        return "mps"
+    return "cpu"
+
+DEVICE = get_device()
 
 
 class JumpReLUMultiLayerSAE(nn.Module):
@@ -64,6 +72,10 @@ def load_clt(
     half_precision: bool = True,
 ) -> JumpReLUMultiLayerSAE:
     """Load a CLT from HuggingFace."""
+    if device == "cpu":
+        half_precision = False
+        print("  Device is cpu, disabling half_precision for CLT.")
+
     print(f"Loading CLT (width={width}, l0={l0}, affine={affine})...")
 
     affine_str = "_affine" if affine else ""
@@ -99,10 +111,14 @@ def load_model_and_tokenizer(device: str = DEVICE):
     """Load Gemma 3 1B model and tokenizer."""
     print("Loading Gemma 3 1B model...")
 
+    # Use float32 on CPU to avoid NaNs/instability with float16
+    dtype = torch.float32 if device == "cpu" else torch.float16
+    print(f"Using device: {device}, dtype: {dtype}")
+
     model = AutoModelForCausalLM.from_pretrained(
         "google/gemma-3-1b-pt",
         device_map=device,
-        torch_dtype=torch.float16,
+        torch_dtype=dtype,
     )
     tokenizer = AutoTokenizer.from_pretrained("google/gemma-3-1b-pt")
 
