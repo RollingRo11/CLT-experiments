@@ -1,119 +1,163 @@
-Experiment 7: Downstream Component Targeting Results
+Experiment 7: Full Component Targeting Scan
 ============================================================
 
-[NULL BASELINE (Random Vectors)]
-  MLP: mean=0.1101, p95=0.1276, p99=0.1378
-  Attn Q: mean=0.3492, p95=0.4406, p99=0.4772
+[ATTENTION TARGETING]
+Total scanned: 3,276,000
+Above null p99: 454,742 (13.88%)
+Null p99 threshold: 0.4758
 
-[CROSS-LAYER VECTORS]
-  MLP mean: 0.1149
-  MLP above null 95th: 97/1000 (9.7%)
-  MLP above null 99th: 41/1000 (4.1%)
+Target layer distribution:
+  Layer  1: 3,937
+  Layer  2: 5,226
+  Layer  3: 78
+  Layer  4: 20,042
+  Layer  5: 16
+  Layer  6: 1,499
+  Layer  8: 1,330
+  Layer  9: 10
+  Layer 10: 2
+  Layer 11: 20,451
+  Layer 12: 5,500
+  Layer 13: 2
+  Layer 14: 56
+  Layer 15: 15,096
+  Layer 16: 19,992
+  Layer 17: 45,433
+  Layer 18: 3,034
+  Layer 19: 158,695
+  Layer 20: 1,038
+  Layer 21: 11,262
+  Layer 22: 5,222
+  Layer 23: 93,213
+  Layer 24: 573
+  Layer 25: 43,035
 
-  Attn Q mean: 0.3775
-  Attn Q above null 95th: 195/1000 (19.5%)
-  Attn Q above null 99th: 133/1000 (13.3%)
+Top 50 attention targeters:
+  L 6->L21 | Feat   741 | Str: 2.949 | Head 2
+  L 9->L21 | Feat  1815 | Str: 2.789 | Head 2
+  L10->L21 | Feat  2317 | Str: 2.764 | Head 2
+  L 7->L21 | Feat  2010 | Str: 2.744 | Head 2
+  L10->L21 | Feat   318 | Str: 2.603 | Head 2
+  L 3->L21 | Feat  5066 | Str: 2.575 | Head 2
+  L14->L21 | Feat  5281 | Str: 2.534 | Head 2
+  L 6->L21 | Feat  2622 | Str: 2.446 | Head 2
+  L19->L21 | Feat  1307 | Str: 2.430 | Head 2
+  L19->L21 | Feat  4080 | Str: 2.356 | Head 2
 
-[Top MLP Targeters]
-  L8->L22 | Feat 9815 | Sim: 0.450 | Neuron 3366
-  L3->L18 | Feat 443 | Sim: 0.426 | Neuron 746
-  L8->L17 | Feat 8235 | Sim: 0.400 | Neuron 2418
-  L8->L13 | Feat 369 | Sim: 0.372 | Neuron 1044
-  L8->L18 | Feat 1066 | Sim: 0.338 | Neuron 4239
-  L8->L23 | Feat 2999 | Sim: 0.333 | Neuron 570
-  L8->L19 | Feat 703 | Sim: 0.326 | Neuron 6367
-  L8->L14 | Feat 327 | Sim: 0.291 | Neuron 1022
-  L8->L17 | Feat 2075 | Sim: 0.288 | Neuron 6884
-  L8->L14 | Feat 896 | Sim: 0.280 | Neuron 1580
-  L4->L13 | Feat 4337 | Sim: 0.235 | Neuron 4332
-  L4->L17 | Feat 3127 | Sim: 0.235 | Neuron 1598
-  L8->L17 | Feat 3009 | Sim: 0.225 | Neuron 5180
-  L8->L16 | Feat 739 | Sim: 0.201 | Neuron 206
-  L8->L17 | Feat 153 | Sim: 0.198 | Neuron 4796
-  L4->L15 | Feat 773 | Sim: 0.197 | Neuron 5122
-  L8->L15 | Feat 7919 | Sim: 0.187 | Neuron 1820
-  L8->L18 | Feat 8787 | Sim: 0.179 | Neuron 738
-  L8->L17 | Feat 237 | Sim: 0.163 | Neuron 6067
-  L0->L17 | Feat 8312 | Sim: 0.162 | Neuron 1004
-  L10->L17 | Feat 116 | Sim: 0.162 | Neuron 2474
-  L8->L13 | Feat 8339 | Sim: 0.160 | Neuron 4269
-  L4->L20 | Feat 2871 | Sim: 0.159 | Neuron 6719
-  L8->L18 | Feat 1416 | Sim: 0.153 | Neuron 4699
-  L8->L20 | Feat 6502 | Sim: 0.150 | Neuron 3887
-  L4->L18 | Feat 7140 | Sim: 0.147 | Neuron 3425
-  L8->L15 | Feat 9390 | Sim: 0.145 | Neuron 2095
-  L8->L19 | Feat 8815 | Sim: 0.144 | Neuron 6091
-  L8->L12 | Feat 2031 | Sim: 0.143 | Neuron 6091
-  L4->L17 | Feat 483 | Sim: 0.143 | Neuron 3058
-  L8->L20 | Feat 6560 | Sim: 0.143 | Neuron 5134
-  L8->L17 | Feat 9794 | Sim: 0.142 | Neuron 6141
-  L8->L16 | Feat 550 | Sim: 0.142 | Neuron 3746
-  L4->L19 | Feat 2958 | Sim: 0.141 | Neuron 705
-  L4->L17 | Feat 352 | Sim: 0.140 | Neuron 1481
-  L8->L13 | Feat 3035 | Sim: 0.140 | Neuron 3400
-  L8->L14 | Feat 1114 | Sim: 0.140 | Neuron 4122
-  L4->L20 | Feat 9811 | Sim: 0.139 | Neuron 2244
-  L6->L17 | Feat 665 | Sim: 0.139 | Neuron 6803
-  L8->L23 | Feat 10006 | Sim: 0.138 | Neuron 913
-  L8->L21 | Feat 6808 | Sim: 0.138 | Neuron 4871
-  L7->L20 | Feat 4584 | Sim: 0.137 | Neuron 2684
-  L8->L20 | Feat 8147 | Sim: 0.136 | Neuron 1934
-  L8->L21 | Feat 6369 | Sim: 0.136 | Neuron 4027
-  L8->L13 | Feat 1697 | Sim: 0.136 | Neuron 3607
-  L8->L19 | Feat 5927 | Sim: 0.136 | Neuron 436
-  L8->L13 | Feat 4356 | Sim: 0.135 | Neuron 471
-  L8->L14 | Feat 145 | Sim: 0.135 | Neuron 2422
-  L8->L17 | Feat 4859 | Sim: 0.135 | Neuron 5925
-  L8->L14 | Feat 5750 | Sim: 0.135 | Neuron 718
+============================================================
 
-[Top Attention Targeters]
-  L0->L1 | Feat 6499 | Score: 0.750 | Head 0
-  L0->L2 | Feat 8644 | Score: 0.676 | Head 2
-  L4->L19 | Feat 9494 | Score: 0.660 | Head 3
-  L7->L19 | Feat 228 | Score: 0.637 | Head 3
-  L8->L19 | Feat 2042 | Score: 0.628 | Head 2
-  L4->L19 | Feat 7457 | Score: 0.612 | Head 2
-  L8->L19 | Feat 2571 | Score: 0.597 | Head 3
-  L4->L19 | Feat 6979 | Score: 0.591 | Head 3
-  L8->L19 | Feat 1664 | Score: 0.584 | Head 1
-  L8->L19 | Feat 230 | Score: 0.582 | Head 2
-  L7->L19 | Feat 2458 | Score: 0.576 | Head 1
-  L0->L1 | Feat 8358 | Score: 0.576 | Head 0
-  L8->L23 | Feat 3889 | Score: 0.573 | Head 1
-  L8->L19 | Feat 9859 | Score: 0.570 | Head 3
-  L8->L19 | Feat 9339 | Score: 0.568 | Head 3
-  L8->L19 | Feat 9388 | Score: 0.567 | Head 1
-  L8->L19 | Feat 7906 | Score: 0.566 | Head 1
-  L8->L19 | Feat 2622 | Score: 0.566 | Head 3
-  L8->L19 | Feat 2349 | Score: 0.563 | Head 3
-  L8->L23 | Feat 4873 | Score: 0.563 | Head 1
-  L10->L19 | Feat 1293 | Score: 0.563 | Head 1
-  L8->L19 | Feat 10011 | Score: 0.561 | Head 1
-  L8->L19 | Feat 4599 | Score: 0.561 | Head 1
-  L4->L19 | Feat 5496 | Score: 0.560 | Head 1
-  L4->L19 | Feat 6625 | Score: 0.556 | Head 3
-  L8->L23 | Feat 2999 | Score: 0.555 | Head 0
-  L8->L19 | Feat 10010 | Score: 0.555 | Head 2
-  L8->L19 | Feat 596 | Score: 0.554 | Head 1
-  L4->L21 | Feat 5210 | Score: 0.553 | Head 2
-  L4->L19 | Feat 2739 | Score: 0.551 | Head 1
-  L4->L19 | Feat 9672 | Score: 0.550 | Head 1
-  L8->L19 | Feat 6623 | Score: 0.546 | Head 2
-  L8->L19 | Feat 5611 | Score: 0.546 | Head 1
-  L8->L19 | Feat 202 | Score: 0.545 | Head 1
-  L8->L19 | Feat 9374 | Score: 0.545 | Head 1
-  L4->L19 | Feat 3661 | Score: 0.544 | Head 3
-  L8->L19 | Feat 6668 | Score: 0.542 | Head 1
-  L8->L19 | Feat 5548 | Score: 0.541 | Head 1
-  L8->L17 | Feat 8235 | Score: 0.541 | Head 1
-  L5->L19 | Feat 7657 | Score: 0.539 | Head 1
-  L8->L19 | Feat 3752 | Score: 0.538 | Head 1
-  L4->L19 | Feat 6525 | Score: 0.538 | Head 1
-  L4->L19 | Feat 9011 | Score: 0.538 | Head 3
-  L8->L19 | Feat 142 | Score: 0.536 | Head 3
-  L5->L19 | Feat 9439 | Score: 0.536 | Head 3
-  L6->L19 | Feat 6072 | Score: 0.535 | Head 1
-  L4->L19 | Feat 1494 | Score: 0.535 | Head 1
-  L8->L19 | Feat 8522 | Score: 0.534 | Head 2
-  L8->L19 | Feat 5495 | Score: 0.533 | Head 1
-  L4->L19 | Feat 7371 | Score: 0.533 | Head 2
+[MLP TARGETING]
+Total scanned: 3,276,000
+Above null p99: 438,487 (13.38%)
+Null p99 threshold: 0.1413
+
+Target layer distribution:
+  Layer  1: 2,256
+  Layer  2: 3,437
+  Layer  3: 15,134
+  Layer  4: 20,654
+  Layer  5: 8,624
+  Layer  6: 6,129
+  Layer  7: 4,311
+  Layer  8: 3,448
+  Layer  9: 8,653
+  Layer 10: 7,512
+  Layer 11: 13,758
+  Layer 12: 15,815
+  Layer 13: 10,421
+  Layer 14: 11,069
+  Layer 15: 17,733
+  Layer 16: 44,260
+  Layer 17: 35,851
+  Layer 18: 22,666
+  Layer 19: 14,749
+  Layer 20: 16,184
+  Layer 21: 11,188
+  Layer 22: 14,968
+  Layer 23: 13,445
+  Layer 24: 24,528
+  Layer 25: 91,694
+
+Top hub neurons:
+  Layer  4 Neuron  5600: 9,430 features
+  Layer  3 Neuron  2780: 9,032 features
+  Layer 25 Neuron   948: 5,513 features
+  Layer  4 Neuron  1834: 2,694 features
+  Layer 17 Neuron  1118: 2,191 features
+  Layer 25 Neuron  2947: 1,912 features
+  Layer  4 Neuron  1664: 1,507 features
+  Layer 25 Neuron  5619: 1,318 features
+  Layer 25 Neuron  4377: 1,311 features
+  Layer 25 Neuron  1074: 1,180 features
+  Layer 24 Neuron  1648: 1,176 features
+  Layer 25 Neuron  3723: 1,151 features
+  Layer 12 Neuron  1157: 1,084 features
+  Layer 25 Neuron    18: 1,010 features
+  Layer 25 Neuron  6089: 1,008 features
+  Layer 25 Neuron  2600: 976 features
+  Layer 25 Neuron  3634: 948 features
+  Layer 25 Neuron  1561: 911 features
+  Layer 16 Neuron  3688: 785 features
+  Layer 23 Neuron   921: 760 features
+  Layer 25 Neuron  1606: 746 features
+  Layer 25 Neuron  3265: 703 features
+  Layer 25 Neuron  2582: 691 features
+  Layer  4 Neuron  2097: 675 features
+  Layer 25 Neuron  6153: 661 features
+  Layer 25 Neuron  2548: 654 features
+  Layer 25 Neuron  2737: 631 features
+  Layer 16 Neuron  4830: 629 features
+  Layer 25 Neuron  4666: 591 features
+  Layer 24 Neuron  1636: 588 features
+
+Top 50 MLP targeters:
+  L18->L22 | Feat  6775 | Cos: +0.793 | Neuron 890
+  L22->L25 | Feat  2618 | Cos: -0.784 | Neuron 6861
+  L11->L16 | Feat  7378 | Cos: +0.778 | Neuron 4963
+  L20->L22 | Feat   406 | Cos: +0.766 | Neuron 890
+  L17->L19 | Feat  9993 | Cos: -0.758 | Neuron 6568
+  L20->L25 | Feat  9244 | Cos: -0.756 | Neuron 3949
+  L15->L22 | Feat  3331 | Cos: +0.754 | Neuron 890
+  L21->L25 | Feat  7410 | Cos: -0.752 | Neuron 1413
+  L16->L25 | Feat  4539 | Cos: -0.750 | Neuron 752
+  L16->L25 | Feat  2058 | Cos: -0.747 | Neuron 1080
+  L14->L16 | Feat  7435 | Cos: -0.741 | Neuron 2524
+  L10->L16 | Feat  1455 | Cos: +0.737 | Neuron 4963
+  L23->L24 | Feat   323 | Cos: +0.734 | Neuron 3457
+  L22->L25 | Feat   879 | Cos: +0.727 | Neuron 5758
+  L21->L25 | Feat  5484 | Cos: -0.726 | Neuron 2280
+  L20->L25 | Feat   406 | Cos: -0.725 | Neuron 6514
+  L17->L25 | Feat  2714 | Cos: -0.721 | Neuron 1080
+  L17->L25 | Feat  3216 | Cos: -0.719 | Neuron 6800
+  L16->L25 | Feat  2635 | Cos: -0.718 | Neuron 1001
+  L17->L24 | Feat  9287 | Cos: -0.718 | Neuron 2495
+  L17->L25 | Feat   219 | Cos: -0.718 | Neuron 6704
+  L11->L16 | Feat  1202 | Cos: -0.718 | Neuron 2524
+  L20->L25 | Feat  2966 | Cos: -0.717 | Neuron 5615
+  L22->L25 | Feat  6504 | Cos: -0.714 | Neuron 5615
+  L22->L24 | Feat  4146 | Cos: +0.713 | Neuron 3496
+  L21->L25 | Feat  6408 | Cos: -0.711 | Neuron 104
+  L17->L25 | Feat  3840 | Cos: -0.710 | Neuron 752
+  L 4->L 7 | Feat  8228 | Cos: -0.709 | Neuron 3798
+  L17->L25 | Feat  8550 | Cos: -0.708 | Neuron 6735
+  L17->L25 | Feat  2503 | Cos: -0.707 | Neuron 5615
+  L20->L25 | Feat   785 | Cos: +0.706 | Neuron 4741
+  L17->L24 | Feat  1527 | Cos: -0.706 | Neuron 6494
+  L19->L25 | Feat   483 | Cos: -0.706 | Neuron 602
+  L20->L25 | Feat  3198 | Cos: +0.705 | Neuron 2947
+  L19->L23 | Feat  2003 | Cos: -0.705 | Neuron 5073
+  L16->L25 | Feat  8493 | Cos: -0.702 | Neuron 1551
+  L17->L19 | Feat  8610 | Cos: -0.701 | Neuron 4435
+  L21->L25 | Feat   170 | Cos: -0.701 | Neuron 4096
+  L16->L25 | Feat  6065 | Cos: -0.699 | Neuron 830
+  L16->L25 | Feat  2807 | Cos: -0.698 | Neuron 1080
+  L17->L24 | Feat  9993 | Cos: -0.696 | Neuron 6530
+  L20->L22 | Feat  1849 | Cos: +0.696 | Neuron 1722
+  L19->L25 | Feat  3425 | Cos: +0.692 | Neuron 5758
+  L20->L25 | Feat  2198 | Cos: -0.691 | Neuron 1080
+  L23->L25 | Feat  1101 | Cos: +0.690 | Neuron 5758
+  L16->L24 | Feat  3156 | Cos: +0.690 | Neuron 1648
+  L19->L25 | Feat  4914 | Cos: -0.690 | Neuron 3756
+  L17->L25 | Feat  1057 | Cos: -0.690 | Neuron 4191
+  L21->L25 | Feat  4806 | Cos: -0.689 | Neuron 5537
+  L22->L25 | Feat   241 | Cos: -0.689 | Neuron 4989
