@@ -69,14 +69,20 @@ def load_clt(
     l0: str = "big",
     affine: bool = True,
     device: str = DEVICE,
-    half_precision: bool = True,
+    dtype: torch.dtype = None,
 ) -> JumpReLUMultiLayerSAE:
     """Load a CLT from HuggingFace."""
-    if device == "cpu":
-        half_precision = False
-        print("  Device is cpu, disabling half_precision for CLT.")
+    # Determine default dtype if not provided
+    if dtype is None:
+        if device == "cpu":
+            dtype = torch.float32
+        elif device == "cuda" and torch.cuda.is_bf16_supported():
+            dtype = torch.bfloat16
+        else:
+            dtype = torch.float16
 
     print(f"Loading CLT (width={width}, l0={l0}, affine={affine})...")
+    print(f"  CLT Target dtype: {dtype}")
 
     affine_str = "_affine" if affine else ""
     subcategory = f"width_{width}_l0_{l0}{affine_str}"
@@ -100,8 +106,8 @@ def load_clt(
     clt = JumpReLUMultiLayerSAE(d_model, d_sae, NUM_LAYERS, affine)
     clt.load_state_dict(params)
 
-    if half_precision:
-        clt = clt.half()
+    # Cast to desired dtype
+    clt = clt.to(dtype=dtype)
 
     print(f"  Loaded CLT with d_model={d_model}, d_sae={d_sae}")
     return clt.to(device)
@@ -111,8 +117,14 @@ def load_model_and_tokenizer(device: str = DEVICE):
     """Load Gemma 3 1B model and tokenizer."""
     print("Loading Gemma 3 1B model...")
 
-    # Use float32 on CPU to avoid NaNs/instability with float16
-    dtype = torch.float32 if device == "cpu" else torch.float16
+    # Use float32 on CPU, bfloat16 on CUDA/MPS for stability
+    if device == "cpu":
+        dtype = torch.float32
+    elif device == "cuda" and torch.cuda.is_bf16_supported():
+        dtype = torch.bfloat16
+    else:
+        dtype = torch.float16
+        
     print(f"Using device: {device}, dtype: {dtype}")
 
     model = AutoModelForCausalLM.from_pretrained(
@@ -127,8 +139,19 @@ def load_model_and_tokenizer(device: str = DEVICE):
 
 def gather_acts_hook(mod, inputs, outputs, cache: dict, key: str, use_input: bool):
     """Generic hook function to store activations."""
-    acts = inputs[0].squeeze(0) if use_input else outputs[0]
-    cache[key] = acts
+    # Handle inputs/outputs being tuples or tensors
+    if use_input:
+        data = inputs[0] if isinstance(inputs, tuple) else inputs
+    else:
+        data = outputs[0] if isinstance(outputs, tuple) else outputs
+        
+    # data is [batch, seq, d_model]. specific for this exp, take first batch item
+    if len(data.shape) == 3:
+        acts = data[0]
+    else:
+        acts = data
+        
+    cache[key] = acts.detach() # Detach to be safe
     return outputs
 
 
