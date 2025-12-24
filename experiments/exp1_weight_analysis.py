@@ -54,14 +54,19 @@ def analyze_decoder_weights(clt) -> dict:
     same_layer_mask = np.eye(num_layers, dtype=bool)
     cross_layer_mask = ~same_layer_mask
 
-    # For CLTs, only lower-triangular (including diagonal) should be nonzero
-    # because layer l can only write to layers >= l
-    causal_mask = np.tril(np.ones((num_layers, num_layers), dtype=bool))
-    future_mask = causal_mask & cross_layer_mask  # cross-layer that are valid (l_out >= l_in)
+    # For CLTs, features at layer l_in can write to layers l_out >= l_in
+    # In norms[l_in, l_out], valid pairs have l_out >= l_in (upper triangular)
+    causal_mask = np.triu(np.ones((num_layers, num_layers), dtype=bool))
+    future_mask = causal_mask & cross_layer_mask  # cross-layer that are valid (l_out > l_in)
 
     same_layer_total = norms[same_layer_mask].sum()
     cross_layer_total = norms[future_mask].sum()
     total_norm = same_layer_total + cross_layer_total
+
+    # Debug: print some sample norms
+    print(f"\nDiagonal (same-layer) norms sample: {norms.diagonal()[:5]}")
+    print(f"Off-diagonal sample [0,1:5]: {norms[0, 1:5]}")
+    print(f"Off-diagonal sample [0,-5:]: {norms[0, -5:]}")
 
     results = {
         "norms_matrix": norms,
