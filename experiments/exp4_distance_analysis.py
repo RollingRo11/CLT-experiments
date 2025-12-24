@@ -31,7 +31,7 @@ def analyze_by_distance(clt) -> dict:
 
             # Get all decoder vectors for this pair
             dec_vectors = w_dec[l_in, :, l_out, :]  # [d_sae, d_in]
-            feature_norms = torch.norm(dec_vectors, dim=-1).cpu().numpy()
+            feature_norms = torch.norm(dec_vectors, dim=-1).float().cpu().numpy()
 
             distance_norms[distance].extend(feature_norms)
 
@@ -80,7 +80,7 @@ def analyze_per_layer_patterns(clt) -> dict:
         for l_out in range(l_in, num_layers):
             distance = l_out - l_in
             dec_vectors = w_dec[l_in, :, l_out, :]
-            norms = torch.norm(dec_vectors, dim=-1).cpu().numpy()
+            norms = torch.norm(dec_vectors, dim=-1).float().cpu().numpy()
             mean_norm = np.mean(norms)
 
             if distance == 0:
