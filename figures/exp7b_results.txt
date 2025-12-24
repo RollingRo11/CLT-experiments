@@ -1,0 +1,135 @@
+Experiment 7b: Full Attention Targeting Scan
+============================================================
+
+[SUMMARY]
+Total scanned: 3,276,000
+Above null p99: 452,468 (13.81%)
+Null p99 threshold: 0.4761
+
+[TARGET LAYER DISTRIBUTION]
+  Layer  1:  3924
+  Layer  2:  5207
+  Layer  3:    78
+  Layer  4: 19994
+  Layer  5:    16
+  Layer  6:  1483
+  Layer  8:  1319
+  Layer  9:    10
+  Layer 10:     2
+  Layer 11: 20303
+  Layer 12:  5440
+  Layer 13:     2
+  Layer 14:    55
+  Layer 15: 14946
+  Layer 16: 19794
+  Layer 17: 45177
+  Layer 18:  3003
+  Layer 19: 158243
+  Layer 20:  1033
+  Layer 21: 11196
+  Layer 22:  5184
+  Layer 23: 92650
+  Layer 24:   569
+  Layer 25: 42840
+
+[TOP 100 TARGETERS]
+  L 6->L21 | Feat   741 | Str: 2.949 | Head 2
+  L 9->L21 | Feat  1815 | Str: 2.789 | Head 2
+  L10->L21 | Feat  2317 | Str: 2.764 | Head 2
+  L 7->L21 | Feat  2010 | Str: 2.744 | Head 2
+  L10->L21 | Feat   318 | Str: 2.603 | Head 2
+  L 3->L21 | Feat  5066 | Str: 2.575 | Head 2
+  L14->L21 | Feat  5281 | Str: 2.534 | Head 2
+  L 6->L21 | Feat  2622 | Str: 2.446 | Head 2
+  L19->L21 | Feat  1307 | Str: 2.430 | Head 2
+  L19->L21 | Feat  4080 | Str: 2.356 | Head 2
+  L 8->L21 | Feat   362 | Str: 2.352 | Head 2
+  L10->L21 | Feat  2581 | Str: 2.336 | Head 2
+  L16->L25 | Feat  9634 | Str: 2.336 | Head 2
+  L10->L21 | Feat  6280 | Str: 2.334 | Head 2
+  L14->L21 | Feat  6848 | Str: 2.310 | Head 2
+  L23->L25 | Feat  7268 | Str: 2.261 | Head 2
+  L10->L21 | Feat  8102 | Str: 2.176 | Head 2
+  L19->L21 | Feat  1822 | Str: 2.173 | Head 2
+  L 8->L21 | Feat   866 | Str: 2.164 | Head 2
+  L 8->L21 | Feat  8995 | Str: 2.101 | Head 1
+  L 6->L21 | Feat  7035 | Str: 2.081 | Head 2
+  L24->L25 | Feat  9505 | Str: 2.080 | Head 2
+  L 3->L25 | Feat   275 | Str: 2.051 | Head 2
+  L 3->L21 | Feat  2584 | Str: 2.048 | Head 2
+  L15->L25 | Feat  1313 | Str: 2.014 | Head 2
+  L 5->L21 | Feat   929 | Str: 2.002 | Head 2
+  L23->L25 | Feat  6193 | Str: 1.998 | Head 2
+  L16->L21 | Feat   655 | Str: 1.952 | Head 2
+  L17->L25 | Feat  2235 | Str: 1.940 | Head 2
+  L 6->L21 | Feat  1935 | Str: 1.940 | Head 2
+  L12->L21 | Feat  1224 | Str: 1.938 | Head 2
+  L 2->L21 | Feat  4877 | Str: 1.920 | Head 2
+  L 9->L21 | Feat  2739 | Str: 1.918 | Head 2
+  L21->L25 | Feat  6879 | Str: 1.910 | Head 2
+  L20->L25 | Feat  3198 | Str: 1.901 | Head 2
+  L 8->L25 | Feat  6279 | Str: 1.895 | Head 2
+  L 6->L21 | Feat  7628 | Str: 1.895 | Head 2
+  L 9->L21 | Feat  6805 | Str: 1.888 | Head 2
+  L12->L21 | Feat   590 | Str: 1.876 | Head 2
+  L11->L21 | Feat  7378 | Str: 1.875 | Head 1
+  L 3->L21 | Feat   815 | Str: 1.869 | Head 2
+  L 9->L21 | Feat  8548 | Str: 1.865 | Head 2
+  L11->L21 | Feat   276 | Str: 1.847 | Head 1
+  L21->L25 | Feat  6518 | Str: 1.828 | Head 2
+  L 7->L21 | Feat  8343 | Str: 1.817 | Head 2
+  L 1->L21 | Feat  6567 | Str: 1.806 | Head 2
+  L 2->L21 | Feat  2048 | Str: 1.798 | Head 2
+  L24->L25 | Feat  1522 | Str: 1.795 | Head 2
+  L10->L21 | Feat   282 | Str: 1.788 | Head 2
+  L20->L25 | Feat  4212 | Str: 1.787 | Head 2
+  L16->L25 | Feat  5602 | Str: 1.764 | Head 2
+  L17->L25 | Feat  6664 | Str: 1.755 | Head 2
+  L 4->L21 | Feat   214 | Str: 1.750 | Head 2
+  L15->L25 | Feat  3887 | Str: 1.750 | Head 2
+  L 6->L21 | Feat  5513 | Str: 1.744 | Head 2
+  L23->L25 | Feat  2862 | Str: 1.727 | Head 2
+  L 5->L21 | Feat  7380 | Str: 1.716 | Head 2
+  L 9->L25 | Feat  8077 | Str: 1.691 | Head 2
+  L21->L25 | Feat   448 | Str: 1.690 | Head 2
+  L 8->L21 | Feat  1337 | Str: 1.679 | Head 2
+  L11->L21 | Feat  9548 | Str: 1.679 | Head 2
+  L16->L25 | Feat  5313 | Str: 1.676 | Head 2
+  L 2->L25 | Feat  8653 | Str: 1.610 | Head 2
+  L17->L25 | Feat  7143 | Str: 1.609 | Head 2
+  L 1->L21 | Feat  9271 | Str: 1.608 | Head 2
+  L 3->L21 | Feat   306 | Str: 1.591 | Head 2
+  L10->L25 | Feat  8794 | Str: 1.587 | Head 2
+  L 4->L22 | Feat  7433 | Str: 1.583 | Head 0
+  L15->L25 | Feat  5517 | Str: 1.582 | Head 2
+  L 9->L21 | Feat  3424 | Str: 1.575 | Head 2
+  L10->L21 | Feat  4712 | Str: 1.573 | Head 2
+  L10->L21 | Feat  6752 | Str: 1.562 | Head 1
+  L 3->L25 | Feat  3960 | Str: 1.556 | Head 2
+  L 7->L21 | Feat  4436 | Str: 1.553 | Head 2
+  L24->L25 | Feat  2915 | Str: 1.549 | Head 2
+  L 5->L25 | Feat  1749 | Str: 1.547 | Head 2
+  L15->L25 | Feat  4198 | Str: 1.539 | Head 2
+  L17->L25 | Feat  8185 | Str: 1.535 | Head 2
+  L11->L21 | Feat  6577 | Str: 1.535 | Head 2
+  L13->L25 | Feat  6455 | Str: 1.534 | Head 2
+  L18->L21 | Feat   914 | Str: 1.531 | Head 1
+  L23->L25 | Feat  8121 | Str: 1.528 | Head 2
+  L 4->L25 | Feat  1198 | Str: 1.526 | Head 2
+  L19->L25 | Feat  8140 | Str: 1.519 | Head 2
+  L11->L21 | Feat  1091 | Str: 1.513 | Head 2
+  L21->L25 | Feat  1222 | Str: 1.512 | Head 2
+  L11->L21 | Feat  7741 | Str: 1.512 | Head 2
+  L16->L25 | Feat   105 | Str: 1.509 | Head 2
+  L16->L25 | Feat  9255 | Str: 1.507 | Head 2
+  L12->L25 | Feat  7253 | Str: 1.506 | Head 2
+  L16->L25 | Feat  8926 | Str: 1.506 | Head 2
+  L24->L25 | Feat  6594 | Str: 1.504 | Head 2
+  L20->L21 | Feat  9311 | Str: 1.503 | Head 1
+  L13->L21 | Feat   832 | Str: 1.498 | Head 2
+  L10->L25 | Feat  2472 | Str: 1.498 | Head 2
+  L 3->L21 | Feat  7341 | Str: 1.498 | Head 2
+  L11->L21 | Feat   931 | Str: 1.495 | Head 2
+  L10->L21 | Feat  4457 | Str: 1.495 | Head 1
+  L 8->L21 | Feat  6211 | Str: 1.493 | Head 2
+  L10->L25 | Feat  1792 | Str: 1.492 | Head 2
